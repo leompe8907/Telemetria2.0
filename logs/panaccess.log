@@ -1,14 +1,14 @@
-[2025-12-28 10:05:18] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] PanAccessSingleton inicializado
-[2025-12-28 10:05:18] INFO [TelemetriaDelancer.server.panaccess_singleton] [AUTH] No hay sesión, autenticando...
-[2025-12-28 10:05:18] INFO [TelemetriaDelancer.server.panaccess_singleton] [RETRY] Intento de login #1/5
-[2025-12-28 10:05:18] INFO [TelemetriaDelancer.utils.auth] [?] [login] Iniciando login - URL: https://mw.cabledelancer.com/?f=login&requestMode=function
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.utils.auth] [?] [login] Respuesta recibida - Status Code: 200
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.utils.auth] [?] [login] Respuesta JSON completa: {'success': True, 'answer': 'baulr0fl1vnsd6lk0rrnacati1'}
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.utils.auth] [OK] [login] Campo 'success' en respuesta: True
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.utils.auth] [AUTH] [login] Campo 'answer' (sessionId): baulr0fl1vnsd6lk0rrn...
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.utils.auth] [OK] [login] Login exitoso - SessionId obtenido (longitud: 26 caracteres)
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] Login exitoso
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] PanAccess inicializado y autenticado correctamente
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.server.panaccess_singleton] [RETRY] Thread de validación periódica iniciado (intervalo: 14400s)
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] Thread de validación periódica iniciado
-[2025-12-28 10:05:19] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] Validación periódica iniciada
+[2025-12-28 22:15:14] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] PanAccessSingleton inicializado
+[2025-12-28 22:15:14] INFO [TelemetriaDelancer.server.panaccess_singleton] [AUTH] No hay sesión, autenticando...
+[2025-12-28 22:15:14] INFO [TelemetriaDelancer.server.panaccess_singleton] [RETRY] Intento de login #1/5
+[2025-12-28 22:15:14] INFO [TelemetriaDelancer.utils.auth] [?] [login] Iniciando login - URL: https://cv01.panaccess.com/?f=login&requestMode=function
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.utils.auth] [?] [login] Respuesta recibida - Status Code: 200
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.utils.auth] [?] [login] Respuesta JSON completa: {'success': True, 'answer': '0gs19qqfpufgpa0cqnns644h2n'}
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.utils.auth] [OK] [login] Campo 'success' en respuesta: True
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.utils.auth] [AUTH] [login] Campo 'answer' (sessionId): 0gs19qqfpufgpa0cqnns...
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.utils.auth] [OK] [login] Login exitoso - SessionId obtenido (longitud: 26 caracteres)
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] Login exitoso
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] PanAccess inicializado y autenticado correctamente
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.server.panaccess_singleton] [RETRY] Thread de validación periódica iniciado (intervalo: 14400s)
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] Thread de validación periódica iniciado
+[2025-12-28 22:15:16] INFO [TelemetriaDelancer.server.panaccess_singleton] [OK] Validación periódica iniciada
