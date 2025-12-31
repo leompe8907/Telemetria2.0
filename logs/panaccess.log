@@ -31,3 +31,6 @@
 [2025-12-31 11:18:10] INFO [TelemetriaDelancer.utils.auth] Login exitoso
 [2025-12-31 11:18:10] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
 [2025-12-31 11:18:10] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 11:33:36] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 11:33:36] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 11:33:36] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado

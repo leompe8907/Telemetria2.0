@@ -90,3 +90,6 @@
 [2025-12-31 11:18:43] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
 [2025-12-31 11:18:43] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
 [2025-12-31 11:18:43] INFO [django.server] "POST /delancer/telemetry/analytics/ HTTP/1.1" 200 412067
+[2025-12-31 11:33:34] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\panaccess\analytics.py changed, reloading.
+[2025-12-31 11:33:36] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 11:33:36] INFO [django.utils.autoreload] Watching for file changes with StatReloader
