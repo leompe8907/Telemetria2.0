@@ -108,11 +108,10 @@ def extract_timestamp_details(data: List[Dict[str, Any]]) -> List[Dict[str, Any]
                 record["dataDate"] = get_data_date(timestamp)
                 record["timeDate"] = get_time_date(timestamp)
             else:
-                logger.warning(f"Registro sin timestamp: recordId={record.get('recordId')}")
                 record["dataDate"] = None
                 record["timeDate"] = None
         except (ValueError, KeyError) as e:
-            logger.error(f"Error procesando timestamp para record {record.get('recordId', 'N/A')}: {e}")
+            logger.debug(f"Error procesando timestamp recordId {record.get('recordId', 'N/A')}: {e}")
             record["dataDate"] = None
             record["timeDate"] = None
     
@@ -125,7 +124,7 @@ def extract_timestamp_details(data: List[Dict[str, Any]]) -> List[Dict[str, Any]
 
 def get_telemetry_records(
     offset: int = 0,
-    limit: int = 1000,
+    limit: int = 100,
     order_by: str = "recordId",
     order_dir: str = "DESC"
 ) -> Dict[str, Any]:
@@ -152,7 +151,7 @@ def get_telemetry_records(
     """
     # Validar parámetros
     if limit > 1000:
-        logger.warning(f"⚠️ Limit {limit} excede el máximo de 1000, usando 1000")
+        logger.debug(f"Limit ajustado de {limit} a 1000 (máximo permitido)")
         limit = 1000
     
     if limit <= 0:
@@ -186,21 +185,25 @@ def get_telemetry_records(
         "orderDir": order_dir
     }
     
-    logger.info(
-        f"📊 Obteniendo registros de telemetría - "
-        f"offset={offset}, limit={limit}, orderBy={order_by}, orderDir={order_dir}"
-    )
+    logger.debug(f"Obteniendo registros - offset={offset}, limit={limit}")
     
     try:
         # Obtener el singleton (maneja sesión automáticamente)
         panaccess = get_panaccess()
         
+        logger.info(f"Llamando a PanAccess getListOfTelemetryRecords (offset={offset}, limit={limit})...")
+        
         # Llamar a PanAccess usando el singleton
-        response = panaccess.call(
-            func_name="getListOfTelemetryRecords",
-            parameters=parameters,
-            timeout=120
-        )
+        try:
+            response = panaccess.call(
+                func_name="getListOfTelemetryRecords",
+                parameters=parameters,
+                timeout=120
+            )
+            logger.info(f"Respuesta recibida de PanAccess exitosamente")
+        except Exception as e:
+            logger.error(f"Error en llamada a PanAccess: {str(e)}", exc_info=True)
+            raise
         
         # Verificar si la llamada fue exitosa
         if not response.get("success"):
@@ -212,7 +215,7 @@ def get_telemetry_records(
         answer = response.get("answer", {})
         records = answer.get("telemetryRecordEntries", [])
         
-        logger.info(f"✅ Obtenidos {len(records)} registros de telemetría")
+        logger.debug(f"Obtenidos {len(records)} registros")
         
         return response
         
@@ -224,7 +227,7 @@ def get_telemetry_records(
 
 
 def fetch_all_telemetry_records(
-    limit: int = 1000,
+    limit: int = 100,
     order_by: str = "recordId",
     order_dir: str = "DESC",
     max_records: Optional[int] = None,
@@ -252,10 +255,14 @@ def fetch_all_telemetry_records(
     all_records = []
     offset = 0
     
-    logger.info(f"📊 Iniciando obtención de todos los registros (limit={limit})")
+    logger.info(f"Iniciando descarga completa (limit={limit})")
     
+    page_count = 0
     while True:
         try:
+            page_count += 1
+            logger.debug(f"Obteniendo página {page_count} (offset={offset}, limit={limit})")
+            
             # Obtener página actual
             response = get_telemetry_records(
                 offset=offset,
@@ -267,8 +274,10 @@ def fetch_all_telemetry_records(
             answer = response.get("answer", {})
             records = answer.get("telemetryRecordEntries", [])
             
+            logger.debug(f"Página {page_count}: obtenidos {len(records)} registros")
+            
             if not records:
-                logger.info("📊 No hay más registros, finalizando")
+                logger.info(f"No hay más registros en página {page_count}")
                 break
             
             # Procesar timestamps si se solicita
@@ -277,17 +286,18 @@ def fetch_all_telemetry_records(
             
             # Agregar registros a la lista
             all_records.extend(records)
-            logger.info(f"📊 Total acumulado: {len(all_records)} registros")
+            
+            # Log cada 1,000 registros para ver progreso más frecuente
+            if len(all_records) % 1000 == 0:
+                logger.info(f"Progreso: {len(all_records)} registros descargados ({page_count} páginas)")
             
             # Verificar si alcanzamos el máximo
             if max_records and len(all_records) >= max_records:
-                logger.info(f"📊 Alcanzado límite máximo de {max_records} registros")
                 all_records = all_records[:max_records]
                 break
             
             # Si obtuvimos menos registros que el límite, es la última página
             if len(records) < limit:
-                logger.info("📊 Última página obtenida, finalizando")
                 break
             
             # Preparar siguiente página
@@ -300,13 +310,13 @@ def fetch_all_telemetry_records(
             logger.error(f"💥 Error inesperado: {str(e)}", exc_info=True)
             raise PanAccessException(f"Error inesperado: {str(e)}")
     
-    logger.info(f"✅ Obtención completa: {len(all_records)} registros totales")
+    logger.info(f"Descarga completa: {len(all_records)} registros totales descargados")
     return all_records
 
 
 def fetch_telemetry_records_until(
     highest_record_id: int,
-    limit: int = 1000,
+    limit: int = 100,
     order_by: str = "recordId",
     order_dir: str = "DESC",
     process_timestamps: bool = True
@@ -332,19 +342,13 @@ def fetch_telemetry_records_until(
         ValueError: Si los parámetros son inválidos
     """
     if order_by != "recordId":
-        logger.warning(
-            f"⚠️ order_by debería ser 'recordId' para esta función, "
-            f"pero se usará '{order_by}'"
-        )
+        logger.debug(f"order_by debería ser 'recordId', usando '{order_by}'")
     
     all_records = []
     offset = 0
     found_target = False
     
-    logger.info(
-        f"📊 Obteniendo registros hasta recordId {highest_record_id} "
-        f"(limit={limit}, orderBy={order_by}, orderDir={order_dir})"
-    )
+    logger.info(f"Descargando registros nuevos desde recordId {highest_record_id}")
     
     while not found_target:
         try:
@@ -360,7 +364,6 @@ def fetch_telemetry_records_until(
             records = answer.get("telemetryRecordEntries", [])
             
             if not records:
-                logger.info("📊 No hay más registros, finalizando")
                 break
             
             # Procesar timestamps si se solicita
@@ -373,7 +376,6 @@ def fetch_telemetry_records_until(
                 
                 # Si encontramos el recordId objetivo, parar
                 if record_id == highest_record_id:
-                    logger.info(f"📊 Encontrado recordId objetivo {highest_record_id}, finalizando")
                     found_target = True
                     break
                 
@@ -383,16 +385,11 @@ def fetch_telemetry_records_until(
                 elif record_id and record_id <= highest_record_id:
                     # Si el recordId es menor o igual, ya pasamos el objetivo
                     if order_dir == "DESC":
-                        logger.info(
-                            f"📊 Encontrado recordId {record_id} <= {highest_record_id}, "
-                            f"finalizando"
-                        )
                         found_target = True
                         break
             
             # Si obtuvimos menos registros que el límite, es la última página
             if len(records) < limit:
-                logger.info("📊 Última página obtenida, finalizando")
                 break
             
             # Si encontramos el objetivo, parar
@@ -409,7 +406,7 @@ def fetch_telemetry_records_until(
             logger.error(f"💥 Error inesperado: {str(e)}", exc_info=True)
             raise PanAccessException(f"Error inesperado: {str(e)}")
     
-    logger.info(f"✅ Obtención completa: {len(all_records)} registros nuevos")
+    logger.info(f"Descarga completa: {len(all_records)} registros nuevos")
     return all_records
 
 
@@ -418,16 +415,16 @@ def fetch_telemetry_records_until(
 # ============================================================================
 
 def fetch_telemetry_records_smart(
-    limit: int = 1000,
+    limit: int = 100,
     process_timestamps: bool = True
 ) -> List[Dict[str, Any]]:
     """
     Función inteligente que decide automáticamente qué descargar:
-    - Si la BD está vacía: descarga TODOS los registros
+    - Si la BD está vacía: descarga TODOS los registros en lotes de 'limit'
     - Si la BD tiene registros: descarga solo los NUEVOS desde el último recordId
     
     Args:
-        limit: Cantidad de registros por página (máximo 1000)
+        limit: Cantidad de registros por página (default: 100, máximo 1000)
         process_timestamps: Si True, procesa timestamps para extraer fecha/hora
     
     Returns:
@@ -438,7 +435,7 @@ def fetch_telemetry_records_smart(
     """
     # Verificar si la BD está vacía
     if is_database_empty():
-        logger.info("📊 Base de datos vacía, descargando TODOS los registros")
+        logger.info(f"BD vacía - descargando TODOS los registros en lotes de {limit}")
         return fetch_all_telemetry_records(
             limit=limit,
             process_timestamps=process_timestamps
@@ -448,13 +445,13 @@ def fetch_telemetry_records_smart(
         highest_record_id = get_highest_record_id()
         
         if highest_record_id is None:
-            logger.warning("⚠️ BD no está vacía pero no se encontró recordId, descargando todos")
+            logger.warning("BD no vacía pero sin recordId - descargando todos los registros")
             return fetch_all_telemetry_records(
                 limit=limit,
                 process_timestamps=process_timestamps
             )
         
-        logger.info(f"📊 Base de datos tiene registros, descargando desde recordId {highest_record_id} en adelante")
+        logger.info(f"Descargando registros nuevos desde recordId {highest_record_id}")
         return fetch_telemetry_records_until(
             highest_record_id=highest_record_id,
             limit=limit,
@@ -493,7 +490,6 @@ def save_telemetry_records(
     from django.core.exceptions import ValidationError
     
     if not records:
-        logger.warning("⚠️ No hay registros para guardar")
         return {
             "total_records": 0,
             "saved_records": 0,
@@ -501,7 +497,7 @@ def save_telemetry_records(
             "errors": 0
         }
     
-    logger.info(f"💾 Iniciando guardado de {len(records)} registros en la BD")
+    logger.info(f"Guardando {len(records)} registros en BD")
     
     # Obtener recordIds existentes para evitar duplicados
     existing_record_ids = set(
@@ -530,7 +526,7 @@ def save_telemetry_records(
                 try:
                     timestamp = datetime.strptime(record["timestamp"], "%Y-%m-%d %H:%M:%S")
                 except (ValueError, TypeError):
-                    logger.warning(f"⚠️ Timestamp inválido para recordId {record_id}: {record.get('timestamp')}")
+                    logger.debug(f"Timestamp inválido recordId {record_id}")
             
             # Convertir dataDate de string a date
             data_date = None
@@ -541,7 +537,7 @@ def save_telemetry_records(
                     else:
                         data_date = record["dataDate"]
                 except (ValueError, TypeError):
-                    logger.warning(f"⚠️ dataDate inválido para recordId {record_id}: {record.get('dataDate')}")
+                    logger.debug(f"dataDate inválido recordId {record_id}")
             
             # Crear objeto del modelo
             telemetry_obj = TelemetryRecordEntry(
@@ -584,7 +580,9 @@ def save_telemetry_records(
                         ignore_conflicts=True
                     )
                 saved_count += len(telemetry_objects)
-                logger.info(f"💾 Guardado lote: {saved_count}/{len(records)} registros")
+                # Log cada 10,000 registros para no saturar
+                if saved_count % 10000 == 0:
+                    logger.debug(f"Progreso guardado: {saved_count}/{len(records)}")
                 telemetry_objects = []
                 
         except Exception as e:
@@ -612,10 +610,7 @@ def save_telemetry_records(
         "errors": error_count
     }
     
-    logger.info(
-        f"✅ Guardado completado: {saved_count} guardados, "
-        f"{skipped_count} omitidos (duplicados), {error_count} errores"
-    )
+    logger.info(f"Guardado: {saved_count} guardados, {skipped_count} omitidos, {error_count} errores")
     
     return result
 

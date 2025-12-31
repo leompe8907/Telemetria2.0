@@ -69,7 +69,7 @@ class PanAccessSingleton:
         self._validation_thread = None
         self._stop_validation = threading.Event()
         
-        logger.info("✅ PanAccessSingleton inicializado")
+        logger.debug("PanAccessSingleton inicializado")
     
     def _authenticate_with_retry(self) -> str:
         """
@@ -86,13 +86,13 @@ class PanAccessSingleton:
         
         while attempt < self.MAX_RETRY_ATTEMPTS:
             try:
-                logger.info(f"🔄 Intento de login #{attempt + 1}/{self.MAX_RETRY_ATTEMPTS}")
+                logger.debug(f"Intento de login #{attempt + 1}/{self.MAX_RETRY_ATTEMPTS}")
                 session_id = login()
                 
                 # Login exitoso, resetear contador
                 self._retry_count = 0
                 self._last_alert_sent = False
-                logger.info("✅ Login exitoso")
+                logger.info("Login exitoso")
                 return session_id
                 
             except (PanAccessAuthenticationError, PanAccessConnectionError, PanAccessTimeoutError) as e:
@@ -106,17 +106,14 @@ class PanAccessSingleton:
                 
                 # Si es el último intento, lanzar excepción
                 if attempt >= self.MAX_RETRY_ATTEMPTS:
-                    logger.error(f"❌ Login falló después de {self.MAX_RETRY_ATTEMPTS} intentos")
+                    logger.error(f"Login falló después de {self.MAX_RETRY_ATTEMPTS} intentos")
                     raise PanAccessException(
                         f"Error de autenticación después de {self.MAX_RETRY_ATTEMPTS} intentos: {str(e)}"
                     )
                 
                 # Calcular delay con backoff exponencial
                 delay = min(delay * 2, self.MAX_RETRY_DELAY)
-                logger.warning(
-                    f"⚠️ Login falló (intento {attempt}/{self.MAX_RETRY_ATTEMPTS}). "
-                    f"Reintentando en {delay} segundos... Error: {str(e)}"
-                )
+                logger.warning(f"Login falló (intento {attempt}/{self.MAX_RETRY_ATTEMPTS}), reintentando en {delay}s")
                 
                 time.sleep(delay)
             
@@ -175,7 +172,7 @@ class PanAccessSingleton:
         with self._session_lock:
             # Verificar si hay sessionId
             if not self.client.session_id:
-                logger.info("🔑 No hay sesión, autenticando...")
+                logger.debug("No hay sesión, autenticando...")
                 self.client.session_id = self._authenticate_with_retry()
                 return
             
@@ -183,7 +180,7 @@ class PanAccessSingleton:
             # Solo validar si hay un error específico de sesión inválida en una llamada real
             # Esto evita logins innecesarios cuando la sesión es válida pero hay errores
             # de permisos o temporales en la validación
-            logger.debug("✅ Sesión existente, confiando en validación periódica")
+            logger.debug("Sesión existente, confiando en validación periódica")
     
     def call(self, func_name: str, parameters: dict = None, timeout: int = 60) -> dict:
         """
@@ -210,7 +207,7 @@ class PanAccessSingleton:
         # (normalmente la validación periódica ya la mantiene activa)
         if func_name != 'login' and func_name != 'cvLoggedIn':
             if not self.client.session_id:
-                logger.warning("⚠️ No hay sesión activa, obteniendo una...")
+                logger.warning("No hay sesión activa, obteniendo una...")
                 self.ensure_session()
         
         # Usar el cliente para hacer la llamada
@@ -232,7 +229,7 @@ class PanAccessSingleton:
         """
         with self._session_lock:
             self.client.session_id = None
-            logger.info("🔄 Sesión reseteada manualmente")
+            logger.debug("Sesión reseteada manualmente")
     
     def _periodic_validation(self):
         """
@@ -241,7 +238,7 @@ class PanAccessSingleton:
         Solo valida si hay una sesión existente y solo la refresca si realmente está caducada.
         Este thread se ejecuta cada VALIDATION_INTERVAL segundos.
         """
-        logger.info(f"🔄 Thread de validación periódica iniciado (intervalo: {self.VALIDATION_INTERVAL}s)")
+        logger.debug(f"Thread de validación periódica iniciado (intervalo: {self.VALIDATION_INTERVAL}s)")
         
         while not self._stop_validation.is_set():
             try:
@@ -253,43 +250,43 @@ class PanAccessSingleton:
                 # Solo validar si hay una sesión existente
                 with self._session_lock:
                     if not self.client.session_id:
-                        logger.debug("🔍 No hay sesión para validar, saltando validación periódica")
+                        logger.debug("No hay sesión para validar, saltando validación periódica")
                         continue
                     
                     # Validar la sesión solo si existe
                     try:
-                        logger.debug("🔍 Validando sesión periódicamente...")
+                        logger.debug("Validando sesión periódicamente...")
                         is_valid = logged_in(self.client.session_id)
                         if not is_valid:
-                            logger.info("🔄 Sesión caducada en validación periódica, refrescando...")
+                            logger.info("Sesión caducada, refrescando...")
                             self.client.session_id = self._authenticate_with_retry()
                         else:
-                            logger.debug("✅ Sesión válida en validación periódica")
+                            logger.debug("Sesión válida en validación periódica")
                     except (PanAccessConnectionError, PanAccessTimeoutError) as e:
                         # Error de conexión/timeout - no refrescar, solo loguear
-                        logger.warning(f"⚠️ Error de conexión en validación periódica: {str(e)}. Manteniendo sesión actual.")
+                        logger.warning(f"Error de conexión en validación periódica: {str(e)}")
                     except PanAccessAPIError as e:
                         # Error de API - verificar si es por permisos o sesión inválida
                         error_code = getattr(e, 'error_code', None)
                         if error_code == 'no_access_to_function':
                             # Error de permisos, no de sesión inválida - mantener sesión
-                            logger.debug("⚠️ Error de permisos en validación periódica, manteniendo sesión")
+                            logger.debug("Error de permisos en validación periódica, manteniendo sesión")
                         else:
                             # Otro error de API - podría ser sesión inválida, refrescar
-                            logger.warning(f"⚠️ Error de API en validación periódica: {str(e)}. Intentando refrescar...")
+                            logger.warning(f"Error de API en validación periódica: {str(e)}")
                             try:
                                 self.client.session_id = self._authenticate_with_retry()
                             except Exception:
                                 logger.error("❌ Error al refrescar sesión en validación periódica")
                 
-                logger.debug("✅ Validación periódica completada")
+                logger.debug("Validación periódica completada")
                 
             except Exception as e:
                 logger.error(f"❌ Error en validación periódica: {str(e)}")
                 # Continuar el loop aunque haya error
                 # El siguiente ciclo intentará nuevamente
         
-        logger.info("🛑 Thread de validación periódica detenido")
+        logger.debug("Thread de validación periódica detenido")
     
     def start_periodic_validation(self):
         """
@@ -299,7 +296,7 @@ class PanAccessSingleton:
         y la refresca automáticamente si está caducada.
         """
         if self._validation_thread is not None and self._validation_thread.is_alive():
-            logger.warning("⚠️ Thread de validación ya está corriendo")
+            logger.warning("Thread de validación ya está corriendo")
             return
         
         # Detener cualquier thread anterior
@@ -313,20 +310,20 @@ class PanAccessSingleton:
             daemon=True  # Thread daemon se detiene cuando el proceso principal termina
         )
         self._validation_thread.start()
-        logger.info("✅ Thread de validación periódica iniciado")
+        logger.debug("Thread de validación periódica iniciado")
     
     def stop_periodic_validation(self):
         """
         Detiene el thread de validación periódica.
         """
         if self._validation_thread is not None and self._validation_thread.is_alive():
-            logger.info("🛑 Deteniendo thread de validación periódica...")
+            logger.debug("Deteniendo thread de validación periódica...")
             self._stop_validation.set()
             self._validation_thread.join(timeout=5)  # Esperar máximo 5 segundos
             if self._validation_thread.is_alive():
-                logger.warning("⚠️ Thread de validación no se detuvo en 5 segundos")
+                logger.warning("Thread de validación no se detuvo en 5 segundos")
             else:
-                logger.info("✅ Thread de validación detenido correctamente")
+                logger.debug("Thread de validación detenido correctamente")
             self._validation_thread = None
 
 
@@ -362,17 +359,17 @@ def initialize_panaccess():
     try:
         # 1. Login inicial
         singleton.ensure_session()
-        logger.info("✅ PanAccess inicializado y autenticado correctamente")
+        logger.info("PanAccess inicializado y autenticado")
         
         # 2. Iniciar validación periódica en background
         singleton.start_periodic_validation()
-        logger.info("✅ Validación periódica iniciada")
+        logger.debug("Validación periódica iniciada")
         
     except PanAccessException as e:
         logger.error(f"❌ Error al inicializar PanAccess: {str(e)}")
         # No lanzamos excepción para que Django pueda arrancar
         # El sistema intentará autenticarse en el primer request
-        logger.warning("⚠️ El sistema intentará autenticarse en el primer request")
+        logger.warning("El sistema intentará autenticarse en el primer request")
         
         # Intentar iniciar validación periódica de todas formas
         # (puede que el login falle pero la validación periódica lo intente después)
