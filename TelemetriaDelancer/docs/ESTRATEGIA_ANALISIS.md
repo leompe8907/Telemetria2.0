@@ -1,0 +1,257 @@
+# Estrategia de Análisis - Telemetría OTT
+
+## 📊 Enfoque Híbrido Recomendado
+
+Este documento explica la estrategia de análisis implementada para el sistema de telemetría OTT.
+
+---
+
+## 🎯 Decisión: ¿Librerías o Solo Funciones?
+
+**Respuesta: Enfoque Híbrido Inteligente**
+
+No usamos una sola librería para todo. En su lugar, elegimos la mejor herramienta para cada tipo de análisis:
+
+### 1. **Django ORM + Funciones Python** (80% de los casos)
+- ✅ **Para:** Análisis simples y medianos
+- ✅ **Ventajas:**
+  - Aprovecha índices de base de datos automáticamente
+  - Muy eficiente en memoria (no carga todo en RAM)
+  - Integrado con Django (sin dependencias extra)
+  - Funciona perfectamente con PostgreSQL
+  - Fácil de mantener y depurar
+
+- 📋 **Ejemplos de uso:**
+  - Top canales más vistos
+  - Análisis por fecha (diario, semanal, mensual)
+  - Estadísticas básicas (promedios, sumas, conteos)
+  - Análisis geográfico
+  - Agrupaciones simples
+
+### 2. **Raw SQL Optimizado** (15% de los casos)
+- ✅ **Para:** Análisis complejos que requieren funciones avanzadas
+- ✅ **Ventajas:**
+  - Funciones de ventana (LAG, LEAD, ROW_NUMBER)
+  - CTEs (Common Table Expressions) complejas
+  - Optimización manual para PostgreSQL
+  - Máximo rendimiento en consultas complejas
+
+- 📋 **Ejemplos de uso:**
+  - Comparación día a día (day-over-day)
+  - Detección de anomalías con desviación estándar
+  - Análisis de tendencias con funciones de ventana
+  - Consultas con múltiples niveles de agregación
+
+### 3. **Pandas (Opcional)** (5% de los casos)
+- ✅ **Para:** Análisis estadísticos muy avanzados
+- ⚠️ **Consideración:** Solo cuando realmente sea necesario
+- ✅ **Ventajas:**
+  - Análisis estadísticos complejos
+  - Transformaciones de datos avanzadas
+  - Exportación fácil a Excel/CSV
+  - Visualizaciones (con matplotlib/plotly)
+
+- 📋 **Ejemplos de uso:**
+  - Análisis de cohortes complejos
+  - Correlaciones entre múltiples variables
+  - Series temporales con forecasting
+  - Análisis de regresión
+
+---
+
+## 📦 Dependencias
+
+### Requeridas (Ya instaladas)
+- Django ORM (incluido en Django)
+- PostgreSQL driver (psycopg2 cuando migres)
+
+### Opcionales (Solo si necesitas análisis avanzados)
+```bash
+pip install pandas  # Para análisis estadísticos avanzados
+pip install numpy   # Dependencia de pandas
+```
+
+---
+
+## 🏗️ Arquitectura del Módulo de Análisis
+
+```
+TelemetriaDelancer/panaccess/analytics.py
+├── Análisis Simples (Django ORM)
+│   ├── get_top_channels()
+│   ├── get_channel_audience()
+│   ├── get_peak_hours_by_channel()
+│   ├── get_average_duration_by_channel()
+│   └── get_temporal_analysis()
+│
+├── Análisis Complejos (Raw SQL)
+│   ├── get_day_over_day_comparison()
+│   └── get_anomaly_detection()
+│
+└── Análisis Avanzados (Pandas - Opcional)
+    └── get_cohort_analysis_pandas()
+```
+
+---
+
+## 💡 ¿Por Qué Este Enfoque?
+
+### Ventajas del Enfoque Híbrido
+
+1. **Rendimiento Óptimo**
+   - Django ORM usa índices automáticamente
+   - Raw SQL permite optimización manual
+   - Pandas solo cuando es absolutamente necesario
+
+2. **Escalabilidad**
+   - No carga toda la tabla en memoria (Django ORM)
+   - PostgreSQL hace el trabajo pesado
+   - Pandas solo para análisis puntuales
+
+3. **Mantenibilidad**
+   - Código claro y fácil de entender
+   - Separación de responsabilidades
+   - Fácil de testear
+
+4. **Flexibilidad**
+   - Puedes agregar pandas después si lo necesitas
+   - No estás atado a una sola librería
+   - Fácil migrar a PostgreSQL
+
+---
+
+## 🚀 Ejemplos de Uso
+
+### Ejemplo 1: Análisis Simple (Django ORM)
+```python
+from TelemetriaDelancer.panaccess.analytics import get_top_channels
+
+# Top 10 canales más vistos
+top_channels = get_top_channels(limit=10)
+# Resultado: Lista de dicts con channel, total_views, percentage
+```
+
+### Ejemplo 2: Análisis Complejo (Raw SQL)
+```python
+from TelemetriaDelancer.panaccess.analytics import get_day_over_day_comparison
+from datetime import datetime, timedelta
+
+# Comparación día a día de los últimos 30 días
+end_date = datetime.now()
+start_date = end_date - timedelta(days=30)
+comparison = get_day_over_day_comparison(start_date, end_date)
+# Resultado: Lista con daily_views, previous_day_views, day_over_day_change
+```
+
+### Ejemplo 3: Análisis Avanzado (Pandas - Opcional)
+```python
+from TelemetriaDelancer.panaccess.analytics import get_cohort_analysis_pandas
+
+# Análisis de cohortes (requiere pandas)
+try:
+    cohort_data = get_cohort_analysis_pandas()
+except ImportError:
+    print("Pandas no está instalado. Instala con: pip install pandas")
+```
+
+---
+
+## 📈 Rendimiento Esperado
+
+### Con Django ORM (Análisis Simples)
+- **Tiempo:** < 1 segundo para 223K registros
+- **Memoria:** Mínima (solo resultados agregados)
+- **Índices:** Aprovechados automáticamente
+
+### Con Raw SQL (Análisis Complejos)
+- **Tiempo:** 1-5 segundos para 223K registros
+- **Memoria:** Mínima (PostgreSQL hace el trabajo)
+- **Optimización:** Manual pero muy eficiente
+
+### Con Pandas (Análisis Avanzados)
+- **Tiempo:** 5-30 segundos (depende de la complejidad)
+- **Memoria:** Media-Alta (carga datos en RAM)
+- **Uso:** Solo cuando es absolutamente necesario
+
+---
+
+## 🔄 Migración a PostgreSQL
+
+### Ventajas al Migrar
+
+1. **Mejor Rendimiento**
+   - Planner más avanzado
+   - Mejor uso de índices múltiples
+   - Funciones de ventana más eficientes
+
+2. **Funciones Avanzadas**
+   - CTEs optimizadas automáticamente
+   - Particionamiento de tablas
+   - Materialized Views para análisis frecuentes
+
+3. **Escalabilidad**
+   - Mejor manejo de grandes volúmenes
+   - Concurrencia mejorada
+   - Replicación y sharding
+
+### Cambios Necesarios
+
+Las consultas ya están optimizadas para PostgreSQL. Solo necesitarás:
+
+1. **Instalar driver de PostgreSQL:**
+   ```bash
+   pip install psycopg2-binary
+   ```
+
+2. **Actualizar settings.py:**
+   ```python
+   DATABASES = {
+       'default': {
+           'ENGINE': 'django.db.backends.postgresql',
+           'NAME': 'tu_base_de_datos',
+           # ... resto de configuración
+       }
+   }
+   ```
+
+3. **Las consultas funcionarán mejor automáticamente** 🎉
+
+---
+
+## 📝 Recomendaciones
+
+### ✅ Hacer
+- Usar Django ORM para análisis simples
+- Usar Raw SQL para análisis complejos
+- Instalar pandas solo si realmente lo necesitas
+- Aprovechar índices de base de datos
+- Usar Materialized Views en PostgreSQL para análisis frecuentes
+
+### ❌ Evitar
+- Cargar toda la tabla en memoria innecesariamente
+- Usar pandas para análisis que se pueden hacer con SQL
+- Hacer análisis complejos en Python cuando SQL es más eficiente
+- Olvidar usar índices en consultas frecuentes
+
+---
+
+## 🎓 Conclusión
+
+**Estrategia Final:**
+- **80% Django ORM** → Rápido, eficiente, integrado
+- **15% Raw SQL** → Para análisis complejos optimizados
+- **5% Pandas** → Solo cuando sea absolutamente necesario
+
+Esta estrategia te da:
+- ✅ Máximo rendimiento
+- ✅ Mínima complejidad
+- ✅ Fácil mantenimiento
+- ✅ Escalabilidad
+- ✅ Preparado para PostgreSQL
+
+---
+
+**Documento creado:** 2025-12-31  
+**Última actualización:** 2025-12-31  
+**Versión:** 1.0
+

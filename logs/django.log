@@ -13853,3 +13853,122 @@
 [2025-12-31 03:26:33] INFO [TelemetriaDelancer.views] Lote 2235 guardado: 83 guardados, 0 omitidos
 [2025-12-31 03:26:33] INFO [TelemetriaDelancer.views] Sincronización completada: 223483 descargados, 223447 guardados, 36 omitidos, 0 errores
 [2025-12-31 03:26:33] INFO [django.server] "POST /delancer/telemetry/sync/ HTTP/1.1" 200 334
+[2025-12-31 08:36:52] INFO [TelemetriaDelancer.views] Sincronización iniciada - limit=100, process_timestamps=True, batch_size=100
+[2025-12-31 08:36:52] INFO [TelemetriaDelancer.views] BD tiene registros - descargando solo los nuevos desde el último recordId
+[2025-12-31 08:36:52] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Descargando registros nuevos desde recordId 223506
+[2025-12-31 08:36:52] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Descargando registros nuevos desde recordId 223506
+[2025-12-31 08:36:52] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Llamando a PanAccess getListOfTelemetryRecords (offset=0, limit=100)...
+[2025-12-31 08:36:53] ERROR [TelemetriaDelancer.panaccess.telemetry_fetcher] Error en llamada a PanAccess: Error en la respuesta de PanAccess: You do not have the permission to execute this functionality.
+Traceback (most recent call last):
+  File "C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\panaccess\telemetry_fetcher.py", line 198, in get_telemetry_records
+    response = panaccess.call(
+        func_name="getListOfTelemetryRecords",
+        parameters=parameters,
+        timeout=120
+    )
+  File "C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\server\panaccess_singleton.py", line 215, in call
+    return self.client.call(func_name, parameters, timeout)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\server\panaccess_client.py", line 170, in call
+    raise PanAccessAPIError(
+    ...<2 lines>...
+    )
+TelemetriaDelancer.exceptions.PanAccessAPIError: Error en la respuesta de PanAccess: You do not have the permission to execute this functionality.
+[2025-12-31 08:36:53] ERROR [TelemetriaDelancer.panaccess.telemetry_fetcher] [ERROR] Error al obtener registros en offset 0: Error en la respuesta de PanAccess: You do not have the permission to execute this functionality.
+[2025-12-31 08:36:53] ERROR [TelemetriaDelancer.views] Error de PanAccess: Error en la respuesta de PanAccess: You do not have the permission to execute this functionality.
+[2025-12-31 08:36:53] ERROR [django.server] "POST /delancer/telemetry/sync/ HTTP/1.1" 500 156
+[2025-12-31 08:39:18] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\server\panaccess_client.py changed, reloading.
+[2025-12-31 08:39:20] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 08:39:21] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 08:39:35] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\server\panaccess_singleton.py changed, reloading.
+[2025-12-31 08:39:38] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 08:39:39] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 08:39:49] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\server\panaccess_singleton.py changed, reloading.
+[2025-12-31 08:39:50] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 08:39:51] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 08:39:55] INFO [TelemetriaDelancer.views] Sincronización iniciada - limit=100, process_timestamps=True, batch_size=100
+[2025-12-31 08:39:55] INFO [TelemetriaDelancer.views] BD tiene registros - descargando solo los nuevos desde el último recordId
+[2025-12-31 08:39:55] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Descargando registros nuevos desde recordId 223506
+[2025-12-31 08:39:55] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Descargando registros nuevos desde recordId 223506
+[2025-12-31 08:39:55] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Llamando a PanAccess getListOfTelemetryRecords (offset=0, limit=100)...
+[2025-12-31 08:39:56] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Respuesta recibida de PanAccess exitosamente
+[2025-12-31 08:39:56] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Descarga completa: 98 registros nuevos
+[2025-12-31 08:39:56] INFO [TelemetriaDelancer.views] Guardando 98 registros nuevos en BD
+[2025-12-31 08:39:56] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Guardando 98 registros en BD
+[2025-12-31 08:39:56] INFO [TelemetriaDelancer.panaccess.telemetry_fetcher] Guardado: 98 guardados, 0 omitidos, 0 errores
+[2025-12-31 08:39:56] INFO [TelemetriaDelancer.views] Sincronización completada: 98 descargados, 98 guardados, 0 omitidos, 0 errores
+[2025-12-31 08:39:56] INFO [django.server] "POST /delancer/telemetry/sync/ HTTP/1.1" 200 324
+[2025-12-31 09:13:19] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\views.py changed, reloading.
+[2025-12-31 09:13:21] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 09:13:22] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 09:13:37] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\views.py changed, reloading.
+[2025-12-31 09:13:39] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 09:13:39] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 09:13:42] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\urls.py changed, reloading.
+[2025-12-31 09:13:43] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 09:13:44] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 09:13:47] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\utils\auth.py changed, reloading.
+[2025-12-31 09:13:49] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 09:13:49] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 09:13:51] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\panaccess\telemetry_fetcher.py changed, reloading.
+[2025-12-31 09:13:53] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 09:13:54] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 09:13:57] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\views.py changed, reloading.
+[2025-12-31 09:13:58] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 09:13:59] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 09:15:05] INFO [TelemetriaDelancer.views] Merge OTT iniciado - max_record_id=None, batch_size=500
+[2025-12-31 09:15:05] INFO [TelemetriaDelancer.panaccess.ott_merger] Obtenido max_record_id de BD: 0
+[2025-12-31 09:15:05] INFO [TelemetriaDelancer.panaccess.ott_merger] Iniciando merge OTT desde recordId 0
+[2025-12-31 09:15:05] INFO [TelemetriaDelancer.panaccess.ott_merger] Obteniendo mapeo dataId->dataName de actionId=7...
+[2025-12-31 09:15:06] INFO [TelemetriaDelancer.panaccess.ott_merger] Mapeo obtenido: 228 dataId únicos con dataName
+[2025-12-31 09:15:06] INFO [TelemetriaDelancer.panaccess.ott_merger] Obteniendo registros actionId=8 con recordId > 0...
+[2025-12-31 09:15:06] INFO [TelemetriaDelancer.panaccess.ott_merger] Registros a procesar: 109745
+[2025-12-31 09:15:37] INFO [TelemetriaDelancer.panaccess.ott_merger] Merge OTT completado: 109745 procesados, 109745 fusionados, 245 guardados, 0 sin dataName, 0 errores
+[2025-12-31 09:15:37] INFO [TelemetriaDelancer.views] Merge OTT completado: {'total_processed': 109745, 'merged_records': 109745, 'saved_records': 245, 'skipped_records': 0, 'errors': 0}
+[2025-12-31 09:15:37] INFO [django.server] "POST /delancer/telemetry/merge/ott/ HTTP/1.1" 200 173
+[2025-12-31 10:29:21] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 10:29:21] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 10:29:28] ERROR [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 500 145
+[2025-12-31 10:29:45] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2025-12-31 10:29:45] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2025-12-31 10:29:45] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2025-12-31 10:29:46] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2025-12-31 10:29:47] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2025-12-31 10:29:47] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2025-12-31 10:29:47] ERROR [TelemetriaDelancer.views] Error en temporal: user-defined function raised exception
+[2025-12-31 10:29:47] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2025-12-31 10:29:47] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2025-12-31 10:29:48] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2025-12-31 10:29:49] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2025-12-31 10:29:50] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2025-12-31 10:29:50] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2025-12-31 10:29:50] ERROR [django.server] "POST /delancer/telemetry/analytics/ HTTP/1.1" 500 145
+[2025-12-31 10:31:13] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\panaccess\analytics.py changed, reloading.
+[2025-12-31 10:31:15] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 10:31:16] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 10:31:41] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\views.py changed, reloading.
+[2025-12-31 10:31:43] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 10:31:43] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 10:31:49] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\views.py changed, reloading.
+[2025-12-31 10:31:51] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 10:31:52] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 10:31:56] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\views.py changed, reloading.
+[2025-12-31 10:31:58] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 10:31:59] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 10:32:07] INFO [django.utils.autoreload] C:\Users\veyqp\Desktop\backend\TelemetriaDelancer\views.py changed, reloading.
+[2025-12-31 10:32:08] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2025-12-31 10:32:09] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2025-12-31 10:33:11] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2025-12-31 10:33:11] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2025-12-31 10:33:11] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2025-12-31 10:33:11] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2025-12-31 10:33:12] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2025-12-31 10:33:13] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2025-12-31 10:33:13] ERROR [TelemetriaDelancer.views] Error en temporal: user-defined function raised exception
+[2025-12-31 10:33:13] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2025-12-31 10:33:13] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2025-12-31 10:33:14] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2025-12-31 10:33:15] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2025-12-31 10:33:16] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2025-12-31 10:33:17] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2025-12-31 10:33:17] ERROR [django.server] "POST /delancer/telemetry/analytics/ HTTP/1.1" 500 145

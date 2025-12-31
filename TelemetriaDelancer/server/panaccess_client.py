@@ -159,9 +159,17 @@ class PanAccessClient:
                     error_message = json_response.get("errorMessage", "Error desconocido")
                     logger.error(f"Llamada '{func_name}' falló: {error_message}")
                     
-                    # Si el error es de sesión, limpiar sessionId
-                    if "session" in error_message.lower() or "logged" in error_message.lower():
-                        logger.warning(f"Error de sesión '{func_name}', limpiando sessionId")
+                    # Si el error es de sesión o permisos, limpiar sessionId
+                    error_lower = error_message.lower()
+                    is_session_error = (
+                        "session" in error_lower or 
+                        "logged" in error_lower or 
+                        "permission" in error_lower or
+                        "do not have" in error_lower
+                    )
+                    
+                    if is_session_error:
+                        logger.warning(f"Error de sesión/permisos '{func_name}', limpiando sessionId")
                         self.session_id = None
                         raise PanAccessSessionError(
                             f"Error de sesión: {error_message}"

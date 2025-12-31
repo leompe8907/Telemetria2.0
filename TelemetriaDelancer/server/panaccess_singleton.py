@@ -16,7 +16,8 @@ from TelemetriaDelancer.exceptions import (
     PanAccessAuthenticationError,
     PanAccessConnectionError,
     PanAccessTimeoutError,
-    PanAccessAPIError
+    PanAccessAPIError,
+    PanAccessSessionError
 )
 
 logger = logging.getLogger(__name__)
@@ -212,7 +213,17 @@ class PanAccessSingleton:
         
         # Usar el cliente para hacer la llamada
         # El cliente ya tiene el sessionId y lo agregará automáticamente
-        return self.client.call(func_name, parameters, timeout)
+        try:
+            return self.client.call(func_name, parameters, timeout)
+        except PanAccessSessionError:
+            # Si hay error de sesión, refrescar y reintentar una vez
+            logger.warning(f"Error de sesión detectado en '{func_name}', refrescando sesión...")
+            with self._session_lock:
+                self.client.session_id = None
+                self.ensure_session()
+            # Reintentar la llamada con la nueva sesión
+            logger.info(f"Reintentando llamada '{func_name}' con nueva sesión...")
+            return self.client.call(func_name, parameters, timeout)
     
     def get_client(self) -> PanAccessClient:
         """
