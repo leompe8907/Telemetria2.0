@@ -252,10 +252,24 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
         dataDate__isnull=False
     )
     
-    # Para SQLite, usar Raw SQL para weekly y monthly
-    if connection.vendor == 'sqlite' and breakdown in ('weekly', 'monthly'):
+    # Para SQLite, usar Raw SQL para todos los períodos (TruncDate también falla en SQLite)
+    if connection.vendor == 'sqlite':
         # Usar Raw SQL para SQLite
-        if breakdown == 'weekly':
+        if breakdown == 'daily':
+            query = """
+            SELECT 
+                date(dataDate) as period,
+                COUNT(*) as views,
+                COUNT(DISTINCT subscriberCode) as unique_users,
+                COUNT(DISTINCT deviceId) as unique_devices,
+                SUM(dataDuration) as total_watch_time,
+                AVG(dataDuration) as avg_duration
+            FROM merged_telemetric_ott
+            WHERE dataDate >= ? AND dataDate <= ? AND dataDate IS NOT NULL
+            GROUP BY period
+            ORDER BY period
+            """
+        elif breakdown == 'weekly':
             query = """
             SELECT 
                 strftime('%%Y-W%%W', dataDate) as period,
@@ -289,7 +303,7 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
             columns = [col[0] for col in cursor.description]
             temporal_list = [dict(zip(columns, row)) for row in cursor.fetchall()]
     else:
-        # Para PostgreSQL o daily en SQLite, usar Django ORM
+        # Para PostgreSQL, usar Django ORM
         if breakdown == 'daily':
             queryset = queryset.annotate(period=TruncDate('dataDate'))
         elif breakdown == 'weekly':

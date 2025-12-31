@@ -1,92 +1,33 @@
-[2025-12-31 02:05:19] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:05:19] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:05:19] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:05:37] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:05:37] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:05:37] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:18:08] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:18:08] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:18:08] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:22:41] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:22:41] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:22:41] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:22:58] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:22:58] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:22:58] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:23:01] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:23:01] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:23:01] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:23:25] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:23:25] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:23:25] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:24:09] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:24:09] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:24:09] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:24:16] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:24:16] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:24:16] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:24:21] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:24:21] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:24:21] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:24:27] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:24:27] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:24:27] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:24:35] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:24:35] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:24:35] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:26:31] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:26:31] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:26:31] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:31:23] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 02:31:23] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 02:31:23] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 02:47:11] WARNING [TelemetriaDelancer.server.panaccess_client] Timeout 'getListOfTelemetryRecords' (intento 1/3)
-[2025-12-31 06:31:23] INFO [TelemetriaDelancer.server.panaccess_singleton] Sesión caducada, refrescando...
-[2025-12-31 06:31:24] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 06:31:24] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 08:36:53] ERROR [TelemetriaDelancer.server.panaccess_client] Llamada 'getListOfTelemetryRecords' falló: You do not have the permission to execute this functionality.
-[2025-12-31 08:39:21] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 08:39:21] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 08:39:21] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 08:39:39] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 08:39:39] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 08:39:39] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 08:39:51] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 08:39:51] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 08:39:51] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 09:13:22] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 09:13:22] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 09:13:22] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 09:13:39] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 09:13:39] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 09:13:39] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 09:13:44] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 09:13:44] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 09:13:44] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 09:13:49] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 09:13:49] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 09:13:49] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 09:13:54] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 09:13:54] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 09:13:54] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 09:13:59] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 09:13:59] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 09:13:59] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 10:29:21] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 10:29:21] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 10:29:21] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 10:31:16] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 10:31:16] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 10:31:16] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 10:31:43] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 10:31:43] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 10:31:43] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 10:31:52] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 10:31:52] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 10:31:52] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 10:31:59] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 10:31:59] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 10:31:59] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2025-12-31 10:32:09] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2025-12-31 10:32:09] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2025-12-31 10:32:09] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 10:41:10] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 10:41:10] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 10:41:10] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 10:44:37] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 10:44:37] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 10:44:37] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 10:44:44] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 10:44:44] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 10:44:44] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 10:44:55] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 10:44:55] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 10:44:55] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 10:45:01] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 10:45:01] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 10:45:01] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 10:45:09] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 10:45:09] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 10:45:09] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 11:05:41] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 11:05:41] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 11:05:41] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 11:06:12] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 11:06:12] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 11:06:12] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 11:06:20] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 11:06:20] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 11:06:20] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 11:07:29] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 11:07:29] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 11:07:29] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
+[2025-12-31 11:18:10] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2025-12-31 11:18:10] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2025-12-31 11:18:10] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado

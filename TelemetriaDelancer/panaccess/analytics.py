@@ -29,7 +29,8 @@ except ImportError:
 
 from django.db.models import (
     Count, Sum, Avg, Max, Min, Q, F, 
-    Value, IntegerField, FloatField, CharField
+    Value, IntegerField, FloatField, CharField,
+    Case, When
 )
 from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, Extract
 from django.db import connection
@@ -100,6 +101,7 @@ def get_channel_audience(start_date: Optional[datetime] = None,
     """
     Análisis de audiencia por canal (dispositivos y usuarios únicos).
     
+    Incluye total de horas vistas por canal.
     Usa Django ORM con agregaciones que aprovechan índices compuestos.
     """
     queryset = MergedTelemetricOTT.objects.filter(
@@ -111,14 +113,25 @@ def get_channel_audience(start_date: Optional[datetime] = None,
     if end_date:
         queryset = queryset.filter(dataDate__lte=end_date.date())
     
-    # Agregación optimizada con múltiples COUNT DISTINCT
+    # Agregación optimizada con múltiples COUNT DISTINCT y suma de horas
     results = queryset.values('dataName').annotate(
         unique_devices=Count('deviceId', distinct=True),
         unique_users=Count('subscriberCode', distinct=True),
-        total_views=Count('id')
+        total_views=Count('id'),
+        total_watch_time=Sum('dataDuration')  # Total de horas vistas
     ).order_by('-total_views')
     
-    return list(results)
+    # Convertir a lista y calcular horas (dataDuration está en segundos, convertir a horas)
+    result_list = []
+    for item in results:
+        total_hours = (item['total_watch_time'] or 0) / 3600  # Convertir segundos a horas
+        result_list.append({
+            **item,
+            'total_watch_time': float(item['total_watch_time'] or 0),
+            'total_hours': round(total_hours, 2)  # Horas con 2 decimales
+        })
+    
+    return result_list
 
 
 def get_peak_hours_by_channel(channel: Optional[str] = None,
@@ -197,10 +210,18 @@ def get_temporal_analysis(period: str = 'daily',
     if end_date:
         queryset = queryset.filter(dataDate__lte=end_date.date())
     
-    # Para SQLite, usar Raw SQL para weekly y monthly
-    if connection.vendor == 'sqlite' and period in ('weekly', 'monthly'):
+    # Para SQLite, usar Raw SQL para todos los períodos (TruncDate también falla en SQLite)
+    if connection.vendor == 'sqlite':
         # Usar Raw SQL para SQLite
-        if period == 'weekly':
+        if period == 'daily':
+            query = """
+            SELECT 
+                date(dataDate) as period,
+                COUNT(*) as views
+            FROM merged_telemetric_ott
+            WHERE dataDate IS NOT NULL
+            """
+        elif period == 'weekly':
             # SQLite: usar strftime para semana
             query = """
             SELECT 
@@ -236,7 +257,7 @@ def get_temporal_analysis(period: str = 'daily',
         
         return results
     
-    # Para PostgreSQL o daily en SQLite, usar Django ORM
+    # Para PostgreSQL, usar Django ORM
     if period == 'daily':
         queryset = queryset.annotate(period=TruncDate('dataDate'))
     elif period == 'weekly':
@@ -359,6 +380,144 @@ def get_anomaly_detection(threshold_std: float = 3.0,
         results = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
     return results
+
+
+# ============================================================================
+# ANÁLISIS POR FRANJAS HORARIAS
+# ============================================================================
+
+def get_time_slot_analysis(start_date: Optional[datetime] = None,
+                           end_date: Optional[datetime] = None) -> Dict[str, Any]:
+    """
+    Análisis de consumo por franjas horarias.
+    
+    Divide el consumo en 4 franjas:
+    - Madrugada: 00:00 - 05:59
+    - Mañana: 06:00 - 11:59
+    - Tarde: 12:00 - 17:59
+    - Noche: 18:00 - 23:59
+    
+    Retorna total de horas vistas en cada franja horaria.
+    
+    Args:
+        start_date: Fecha de inicio (opcional)
+        end_date: Fecha de fin (opcional)
+    
+    Returns:
+        Dict con consumo por franja horaria
+    """
+    queryset = MergedTelemetricOTT.objects.filter(
+        timeDate__isnull=False,
+        dataDuration__isnull=False
+    )
+    
+    if start_date:
+        queryset = queryset.filter(dataDate__gte=start_date.date())
+    if end_date:
+        queryset = queryset.filter(dataDate__lte=end_date.date())
+    
+    # timeDate es un IntegerField que contiene la hora directamente (0-23)
+    # No necesitamos extraer la hora, solo usar el campo directamente
+    
+    # Usar Django ORM con Case/When para clasificar por franja horaria
+    queryset = queryset.annotate(
+        time_slot=Case(
+            When(timeDate__gte=0, timeDate__lte=5, then=Value('madrugada')),
+            When(timeDate__gte=6, timeDate__lte=11, then=Value('mañana')),
+            When(timeDate__gte=12, timeDate__lte=17, then=Value('tarde')),
+            default=Value('noche'),
+            output_field=CharField()
+        )
+    )
+    
+    results = queryset.values('time_slot').annotate(
+        total_seconds=Sum('dataDuration'),
+        total_views=Count('id')
+    ).order_by('time_slot')
+    
+    # Formatear resultados
+    time_slots = {
+        'madrugada': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0},
+        'mañana': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0},
+        'tarde': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0},
+        'noche': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0}
+    }
+    
+    for row in results:
+        slot = row['time_slot']
+        total_seconds = float(row['total_seconds'] or 0)
+        total_hours = total_seconds / 3600
+        time_slots[slot] = {
+            'total_seconds': total_seconds,
+            'total_hours': round(total_hours, 2),
+            'total_views': row['total_views']
+        }
+    
+    # Calcular totales
+    total_all_hours = sum(slot['total_hours'] for slot in time_slots.values())
+    total_all_views = sum(slot['total_views'] for slot in time_slots.values())
+    
+    return {
+        'time_slots': time_slots,
+        'summary': {
+            'total_hours': round(total_all_hours, 2),
+            'total_views': total_all_views
+        }
+    }
+
+
+# ============================================================================
+# RESUMEN GENERAL DE ANÁLISIS
+# ============================================================================
+
+def get_general_summary(start_date: Optional[datetime] = None,
+                       end_date: Optional[datetime] = None) -> Dict[str, Any]:
+    """
+    Resumen general con métricas principales.
+    
+    Incluye:
+    - Total de horas vistas
+    - Número de usuarios/subscribers activos
+    - Total de visualizaciones
+    - Dispositivos únicos
+    - Canales únicos
+    
+    Args:
+        start_date: Fecha de inicio (opcional)
+        end_date: Fecha de fin (opcional)
+    
+    Returns:
+        Dict con resumen general
+    """
+    queryset = MergedTelemetricOTT.objects.all()
+    
+    if start_date:
+        queryset = queryset.filter(dataDate__gte=start_date.date())
+    if end_date:
+        queryset = queryset.filter(dataDate__lte=end_date.date())
+    
+    # Métricas generales
+    total_views = queryset.count()
+    unique_users = queryset.filter(subscriberCode__isnull=False).values('subscriberCode').distinct().count()
+    unique_devices = queryset.filter(deviceId__isnull=False).values('deviceId').distinct().count()
+    unique_channels = queryset.filter(dataName__isnull=False).values('dataName').distinct().count()
+    
+    # Total de horas vistas (dataDuration está en segundos)
+    duration_stats = queryset.filter(dataDuration__isnull=False).aggregate(
+        total_seconds=Sum('dataDuration')
+    )
+    
+    total_seconds = float(duration_stats['total_seconds'] or 0)
+    total_hours = total_seconds / 3600  # Convertir segundos a horas
+    
+    return {
+        'total_views': total_views,
+        'active_users': unique_users,  # Usuarios/subscribers activos
+        'unique_devices': unique_devices,
+        'unique_channels': unique_channels,
+        'total_watch_time_seconds': total_seconds,
+        'total_watch_time_hours': round(total_hours, 2)  # Total de horas vistas
+    }
 
 
 # ============================================================================

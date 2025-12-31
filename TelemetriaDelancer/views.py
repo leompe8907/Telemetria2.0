@@ -14,24 +14,85 @@ from TelemetriaDelancer.panaccess.ott_merger import merge_ott_records
 from TelemetriaDelancer.exceptions import PanAccessException
 from datetime import datetime, timedelta, date
 import json
+import math
 
 logger = logging.getLogger(__name__)
 
 
 def _serialize_for_json(obj):
     """
-    Serializa objetos para JSON, convirtiendo datetime, date y otros tipos no serializables.
+    Serializa objetos para JSON, convirtiendo datetime, date, Decimal y otros tipos no serializables.
     """
+    from decimal import Decimal
+    
+    # Tipos primitivos que ya son serializables
+    if obj is None or isinstance(obj, (str, int, bool)):
+        return obj
+    
+    # Floats - manejar NaN, inf, -inf
+    if isinstance(obj, float):
+        if math.isnan(obj):
+            return None  # Convertir NaN a None
+        elif math.isinf(obj):
+            return None if obj > 0 else None  # Convertir inf a None
+        return obj
+    
+    # Fechas y tiempos
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
-    elif isinstance(obj, dict):
+    
+    # Decimal (común en Django)
+    if isinstance(obj, Decimal):
+        val = float(obj)
+        # Verificar si el Decimal convertido es NaN o inf
+        if math.isnan(val) or math.isinf(val):
+            return None
+        return val
+    
+    # Diccionarios
+    if isinstance(obj, dict):
         return {key: _serialize_for_json(value) for key, value in obj.items()}
-    elif isinstance(obj, (list, tuple)):
+    
+    # Listas y tuplas
+    if isinstance(obj, (list, tuple)):
         return [_serialize_for_json(item) for item in obj]
-    elif hasattr(obj, '__dict__'):
-        return _serialize_for_json(obj.__dict__)
-    else:
-        return obj
+    
+    # Sets
+    if isinstance(obj, set):
+        return [_serialize_for_json(item) for item in obj]
+    
+    # Objetos con __dict__ (modelos, etc.)
+    if hasattr(obj, '__dict__'):
+        try:
+            return _serialize_for_json(obj.__dict__)
+        except (TypeError, AttributeError):
+            pass
+    
+    # Si es un objeto QuerySet o similar, convertirlo a lista
+    if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
+        try:
+            return [_serialize_for_json(item) for item in obj]
+        except (TypeError, AttributeError):
+            pass
+    
+    # Manejar tipos de NumPy/Pandas
+    try:
+        import numpy as np
+        if isinstance(obj, (np.integer, np.floating)):
+            val = float(obj)
+            if math.isnan(val) or math.isinf(val):
+                return None
+            return val
+        if isinstance(obj, np.ndarray):
+            return [_serialize_for_json(item) for item in obj.tolist()]
+    except (ImportError, AttributeError, TypeError):
+        pass
+    
+    # Si todo falla, convertir a string
+    try:
+        return str(obj)
+    except Exception:
+        return None
 
 
 class TelemetrySyncView(APIView):
@@ -348,7 +409,9 @@ class AnalyticsView(APIView):
                 get_correlation_analysis,
                 get_time_series_analysis,
                 get_user_segmentation_analysis,
-                get_channel_performance_matrix
+                get_channel_performance_matrix,
+                get_general_summary,
+                get_time_slot_analysis
             )
             
             logger.info("Iniciando ejecución de todos los análisis generales")
@@ -363,6 +426,17 @@ class AnalyticsView(APIView):
                 },
                 "analyses": {}
             }
+            
+            # Resumen general (métricas principales)
+            try:
+                logger.info("Ejecutando: general_summary")
+                results["analyses"]["general_summary"] = get_general_summary(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except Exception as e:
+                logger.error(f"Error en general_summary: {e}")
+                results["analyses"]["general_summary"] = {"error": str(e)}
             
             # Análisis básicos (siempre disponibles)
             try:
@@ -427,6 +501,16 @@ class AnalyticsView(APIView):
             except Exception as e:
                 logger.error(f"Error en geographic: {e}")
                 results["analyses"]["geographic"] = {"error": str(e)}
+            
+            try:
+                logger.info("Ejecutando: time_slot_analysis")
+                results["analyses"]["time_slot_analysis"] = get_time_slot_analysis(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except Exception as e:
+                logger.error(f"Error en time_slot_analysis: {e}")
+                results["analyses"]["time_slot_analysis"] = {"error": str(e)}
             
             # Análisis avanzados (requieren Pandas)
             if include_pandas:
@@ -504,10 +588,31 @@ class AnalyticsView(APIView):
             
             logger.info("Todos los análisis generales completados")
             
-            # Serializar resultados para JSON
-            serialized_results = _serialize_for_json(results)
-            
-            return Response(serialized_results, status=status.HTTP_200_OK)
+            # DRF Response maneja la serialización automáticamente, pero necesitamos
+            # asegurarnos de que todos los tipos sean serializables
+            try:
+                # Serializar resultados para JSON
+                serialized_results = _serialize_for_json(results)
+                logger.info("Serialización completada exitosamente")
+                return Response(serialized_results, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
+                # Si falla la serialización, intentar con DRF directamente
+                # DRF puede manejar algunos tipos automáticamente
+                try:
+                    return Response(results, status=status.HTTP_200_OK)
+                except Exception as e2:
+                    logger.error(f"Error crítico en serialización con DRF: {str(e2)}", exc_info=True)
+                    # Último recurso: retornar solo un mensaje de error
+                    return Response(
+                        {
+                            "success": False,
+                            "error": "Error al serializar resultados",
+                            "message": str(e2),
+                            "hint": "Algunos datos no son serializables a JSON. Revisa los logs para más detalles."
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
             
         except Exception as e:
             logger.error(f"Error inesperado en análisis generales: {str(e)}", exc_info=True)
@@ -757,10 +862,31 @@ class PeriodAnalysisView(APIView):
             
             logger.info("Todos los análisis del período completados")
             
-            # Serializar resultados para JSON
-            serialized_results = _serialize_for_json(results)
-            
-            return Response(serialized_results, status=status.HTTP_200_OK)
+            # DRF Response maneja la serialización automáticamente, pero necesitamos
+            # asegurarnos de que todos los tipos sean serializables
+            try:
+                # Serializar resultados para JSON
+                serialized_results = _serialize_for_json(results)
+                logger.info("Serialización completada exitosamente")
+                return Response(serialized_results, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
+                # Si falla la serialización, intentar con DRF directamente
+                # DRF puede manejar algunos tipos automáticamente
+                try:
+                    return Response(results, status=status.HTTP_200_OK)
+                except Exception as e2:
+                    logger.error(f"Error crítico en serialización con DRF: {str(e2)}", exc_info=True)
+                    # Último recurso: retornar solo un mensaje de error
+                    return Response(
+                        {
+                            "success": False,
+                            "error": "Error al serializar resultados",
+                            "message": str(e2),
+                            "hint": "Algunos datos no son serializables a JSON. Revisa los logs para más detalles."
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
             
         except ValueError as e:
             logger.error(f"Error de validación: {str(e)}")
