@@ -763,6 +763,7 @@ class PeriodAnalysisView(APIView):
                 get_period_events_analysis,
                 get_period_trend_analysis
             )
+            from TelemetriaDelancer.panaccess.analytics import get_time_slot_analysis
             
             logger.info(f"Iniciando ejecución de todos los análisis del período {start_date.date()} a {end_date.date()}")
             
@@ -826,6 +827,17 @@ class PeriodAnalysisView(APIView):
             except Exception as e:
                 logger.error(f"Error en users: {e}")
                 results["analyses"]["users"] = {"error": str(e)}
+            
+            # Análisis de franjas horarias
+            try:
+                logger.info("Ejecutando: time_slot_analysis")
+                results["analyses"]["time_slot_analysis"] = get_time_slot_analysis(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except Exception as e:
+                logger.error(f"Error en time_slot_analysis: {e}")
+                results["analyses"]["time_slot_analysis"] = {"error": str(e)}
             
             # Análisis avanzados (requieren Pandas)
             if include_pandas:
@@ -976,7 +988,321 @@ class PeriodAnalysisView(APIView):
                     "channels": "...",
                     "users": "...",
                     "events": "...",
-                    "trend": "..."
+                    "trend": "...",
+                    "time_slot_analysis": "..."
+                }
+            }
+        }, status=status.HTTP_200_OK)
+
+
+# ============================================================================
+# ENDPOINTS DE ANÁLISIS DE USUARIOS
+# ============================================================================
+
+class GeneralUsersAnalysisView(APIView):
+    """
+    Endpoint para análisis general de todos los usuarios/subscribers.
+    
+    Proporciona:
+    - Distribución de usuarios por nivel de actividad (segmentación)
+    - Estadísticas agregadas (promedios)
+    - Top usuarios por diferentes métricas
+    - Distribución temporal de usuarios activos
+    - Métricas de engagement (retención, churn potencial)
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        """
+        POST: Ejecuta análisis general de usuarios.
+        
+        Parámetros opcionales:
+        - start_date: Fecha de inicio (formato: YYYY-MM-DD)
+        - end_date: Fecha de fin (formato: YYYY-MM-DD)
+        - n_segments: Número de segmentos para clasificar usuarios (default: 5)
+        """
+        try:
+            from TelemetriaDelancer.panaccess.analytics_users_general import get_general_users_analysis
+            
+            # Parsear fechas opcionales
+            start_date = None
+            end_date = None
+            
+            start_date_str = request.data.get('start_date')
+            end_date_str = request.data.get('end_date')
+            
+            if start_date_str:
+                try:
+                    start_date = datetime.fromisoformat(start_date_str)
+                except ValueError:
+                    return Response(
+                        {"error": "Formato de start_date inválido", "format": "YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            if end_date_str:
+                try:
+                    end_date = datetime.fromisoformat(end_date_str)
+                except ValueError:
+                    return Response(
+                        {"error": "Formato de end_date inválido", "format": "YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            n_segments = int(request.data.get('n_segments', 5))
+            
+            logger.info(f"Ejecutando análisis general de usuarios - start_date={start_date}, end_date={end_date}")
+            
+            # Ejecutar análisis
+            results = get_general_users_analysis(
+                start_date=start_date,
+                end_date=end_date,
+                n_segments=n_segments
+            )
+            
+            # Serializar y retornar
+            try:
+                serialized_results = _serialize_for_json(results)
+                return Response(serialized_results, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
+                return Response(results, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error inesperado en análisis general de usuarios: {str(e)}", exc_info=True)
+            return Response(
+                {
+                    "success": False,
+                    "error": "Error inesperado",
+                    "message": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def get(self, request):
+        """GET: Información sobre el endpoint."""
+        return Response({
+            "message": "Análisis general de usuarios/subscribers",
+            "usage": {
+                "method": "POST",
+                "endpoint": "/delancer/telemetry/users/analysis/general/",
+                "optional_parameters": {
+                    "start_date": "Fecha de inicio (YYYY-MM-DD)",
+                    "end_date": "Fecha de fin (YYYY-MM-DD)",
+                    "n_segments": "Número de segmentos para clasificación (default: 5)"
+                }
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class UserAnalysisView(APIView):
+    """
+    Endpoint para análisis detallado de un usuario/subscriber específico.
+    
+    Proporciona:
+    - Perfil del usuario (métricas generales)
+    - Comportamiento de consumo (canales, horarios, dispositivos)
+    - Patrones temporales (día de semana, hora del día)
+    - Estadísticas del usuario
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        """
+        POST: Ejecuta análisis de un usuario específico.
+        
+        Parámetros requeridos:
+        - subscriber_code: Código del subscriber a analizar
+        
+        Parámetros opcionales:
+        - start_date: Fecha de inicio (formato: YYYY-MM-DD) - para filtrar
+        - end_date: Fecha de fin (formato: YYYY-MM-DD) - para filtrar
+        """
+        try:
+            from TelemetriaDelancer.panaccess.analytics_user_specific import get_user_analysis
+            
+            subscriber_code = request.data.get('subscriber_code')
+            
+            if not subscriber_code:
+                return Response(
+                    {"error": "subscriber_code es requerido"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Parsear fechas opcionales
+            start_date = None
+            end_date = None
+            
+            start_date_str = request.data.get('start_date')
+            end_date_str = request.data.get('end_date')
+            
+            if start_date_str:
+                try:
+                    start_date = datetime.fromisoformat(start_date_str)
+                except ValueError:
+                    return Response(
+                        {"error": "Formato de start_date inválido", "format": "YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            if end_date_str:
+                try:
+                    end_date = datetime.fromisoformat(end_date_str)
+                except ValueError:
+                    return Response(
+                        {"error": "Formato de end_date inválido", "format": "YYYY-MM-DD"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            logger.info(f"Ejecutando análisis de usuario: {subscriber_code}")
+            
+            # Ejecutar análisis
+            results = get_user_analysis(
+                subscriber_code=subscriber_code,
+                start_date=start_date,
+                end_date=end_date
+            )
+            
+            # Serializar y retornar
+            try:
+                serialized_results = _serialize_for_json(results)
+                return Response(serialized_results, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
+                return Response(results, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error inesperado en análisis de usuario: {str(e)}", exc_info=True)
+            return Response(
+                {
+                    "success": False,
+                    "error": "Error inesperado",
+                    "message": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def get(self, request):
+        """GET: Información sobre el endpoint."""
+        return Response({
+            "message": "Análisis detallado de un usuario/subscriber específico",
+            "usage": {
+                "method": "POST",
+                "endpoint": "/delancer/telemetry/users/analysis/",
+                "required_parameters": {
+                    "subscriber_code": "Código del subscriber a analizar"
+                },
+                "optional_parameters": {
+                    "start_date": "Fecha de inicio (YYYY-MM-DD) - para filtrar",
+                    "end_date": "Fecha de fin (YYYY-MM-DD) - para filtrar"
+                }
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class UserDateRangeAnalysisView(APIView):
+    """
+    Endpoint para análisis detallado de un usuario en un rango de fechas específico.
+    
+    Proporciona:
+    - Resumen del período (métricas del usuario en el rango)
+    - Evolución temporal (actividad día por día)
+    - Canales consumidos en el período
+    - Patrones horarios en el período
+    - Comparación con promedio general
+    - Eventos y anomalías (días con consumo anormal)
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        """
+        POST: Ejecuta análisis de un usuario en un rango de fechas.
+        
+        Parámetros requeridos:
+        - subscriber_code: Código del subscriber a analizar
+        - start_date: Fecha de inicio (formato: YYYY-MM-DD)
+        - end_date: Fecha de fin (formato: YYYY-MM-DD)
+        """
+        try:
+            from TelemetriaDelancer.panaccess.analytics_user_date_range import get_user_date_range_analysis
+            
+            subscriber_code = request.data.get('subscriber_code')
+            start_date_str = request.data.get('start_date')
+            end_date_str = request.data.get('end_date')
+            
+            if not subscriber_code:
+                return Response(
+                    {"error": "subscriber_code es requerido"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if not start_date_str or not end_date_str:
+                return Response(
+                    {
+                        "error": "start_date y end_date son requeridos",
+                        "format": "YYYY-MM-DD"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            try:
+                start_date = datetime.fromisoformat(start_date_str)
+                end_date = datetime.fromisoformat(end_date_str)
+            except ValueError as e:
+                return Response(
+                    {
+                        "error": "Formato de fecha inválido",
+                        "message": str(e),
+                        "format": "YYYY-MM-DD"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if start_date > end_date:
+                return Response(
+                    {"error": "start_date debe ser anterior a end_date"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            logger.info(f"Ejecutando análisis de usuario {subscriber_code} en rango {start_date.date()} a {end_date.date()}")
+            
+            # Ejecutar análisis
+            results = get_user_date_range_analysis(
+                subscriber_code=subscriber_code,
+                start_date=start_date,
+                end_date=end_date
+            )
+            
+            # Serializar y retornar
+            try:
+                serialized_results = _serialize_for_json(results)
+                return Response(serialized_results, status=status.HTTP_200_OK)
+            except Exception as e:
+                logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
+                return Response(results, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error inesperado en análisis de usuario con rango: {str(e)}", exc_info=True)
+            return Response(
+                {
+                    "success": False,
+                    "error": "Error inesperado",
+                    "message": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def get(self, request):
+        """GET: Información sobre el endpoint."""
+        return Response({
+            "message": "Análisis detallado de un usuario en un rango de fechas específico",
+            "usage": {
+                "method": "POST",
+                "endpoint": "/delancer/telemetry/users/analysis/date-range/",
+                "required_parameters": {
+                    "subscriber_code": "Código del subscriber a analizar",
+                    "start_date": "Fecha de inicio (YYYY-MM-DD)",
+                    "end_date": "Fecha de fin (YYYY-MM-DD)"
                 }
             }
         }, status=status.HTTP_200_OK)

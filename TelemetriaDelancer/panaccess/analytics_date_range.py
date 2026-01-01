@@ -119,6 +119,10 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
     # Días del período
     days_in_period = (end_date.date() - start_date.date()).days + 1
     
+    # Convertir total_watch_time de segundos a horas
+    total_watch_time_seconds = float(duration_stats['total_watch_time'] or 0)
+    total_watch_time_hours = total_watch_time_seconds / 3600.0
+    
     return {
         "period": {
             "start_date": start_date.date().isoformat(),
@@ -130,7 +134,8 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
             "unique_users": unique_users,
             "unique_devices": unique_devices,
             "unique_channels": unique_channels,
-            "total_watch_time": float(duration_stats['total_watch_time'] or 0),
+            "total_watch_time_seconds": total_watch_time_seconds,
+            "total_watch_time_hours": round(total_watch_time_hours, 2),
             "avg_duration": float(duration_stats['avg_duration'] or 0),
             "max_duration": float(duration_stats['max_duration'] or 0),
             "min_duration": float(duration_stats['min_duration'] or 0),
