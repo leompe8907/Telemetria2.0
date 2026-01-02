@@ -11,10 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from config import DjangoConfig
+from config import DjangoConfig, CeleryConfig
 
 #* Validar configuraciones
 DjangoConfig.validate()
+CeleryConfig.validate()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -271,3 +272,35 @@ LOGGING = {
         },
     },
 }
+
+# ============================================================================
+# CONFIGURACIÓN DE CELERY
+# ============================================================================
+
+# Usar configuración desde config.py (variables de entorno)
+CELERY_BROKER_URL = CeleryConfig.CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = CeleryConfig.CELERY_RESULT_BACKEND
+
+# Serialización
+CELERY_TASK_SERIALIZER = CeleryConfig.CELERY_TASK_SERIALIZER
+CELERY_ACCEPT_CONTENT = CeleryConfig.CELERY_ACCEPT_CONTENT
+CELERY_RESULT_SERIALIZER = CeleryConfig.CELERY_RESULT_SERIALIZER
+
+# Timezone
+CELERY_TIMEZONE = CeleryConfig.CELERY_TIMEZONE
+CELERY_ENABLE_UTC = CeleryConfig.CELERY_ENABLE_UTC
+
+# Configuración de workers
+# Prefetch multiplier: None = sin límite, los workers toman tareas según necesidad
+CELERY_WORKER_PREFETCH_MULTIPLIER = CeleryConfig.CELERY_WORKER_PREFETCH_MULTIPLIER
+CELERY_TASK_ACKS_LATE = CeleryConfig.CELERY_TASK_ACKS_LATE
+
+# Configuración de reintentos
+CELERY_TASK_DEFAULT_RETRY_DELAY = CeleryConfig.CELERY_TASK_DEFAULT_RETRY_DELAY
+CELERY_TASK_MAX_RETRIES = CeleryConfig.CELERY_TASK_MAX_RETRIES
+
+# Configuración de tareas
+CELERY_TASK_TRACK_STARTED = CeleryConfig.CELERY_TASK_TRACK_STARTED
+
+# Sin límites de tiempo - las tareas duran lo que necesiten
+# (No se configuran CELERY_TASK_TIME_LIMIT ni CELERY_TASK_SOFT_TIME_LIMIT)

@@ -48,3 +48,76 @@ class DjangoConfig:
             missing.append("SALT")
         if missing:
             raise EnvironmentError(f"❌ Faltan variables de entorno: {', '.join(missing)}")
+
+class CeleryConfig:
+    """
+    Configuración de Celery para tareas periódicas.
+    
+    Variables requeridas:
+    - CELERY_BROKER_URL: URL del broker Redis (requerido)
+    - CELERY_RESULT_BACKEND: URL del backend de resultados Redis (requerido)
+    
+    Variables opcionales (tienen valores por defecto):
+    - CELERY_TASK_SERIALIZER: Serializador de tareas (default: 'json')
+    - CELERY_ACCEPT_CONTENT: Contenido aceptado (default: ['json'])
+    - CELERY_RESULT_SERIALIZER: Serializador de resultados (default: 'json')
+    - CELERY_TIMEZONE: Zona horaria (default: 'UTC')
+    - CELERY_ENABLE_UTC: Habilitar UTC (default: True)
+    - CELERY_WORKER_PREFETCH_MULTIPLIER: Multiplicador de prefetch (default: None)
+    - CELERY_TASK_ACKS_LATE: Confirmar tarea después de completarse (default: True)
+    - CELERY_TASK_DEFAULT_RETRY_DELAY: Delay entre reintentos en segundos (default: 60)
+    - CELERY_TASK_MAX_RETRIES: Máximo de reintentos (default: 3)
+    - CELERY_TASK_TRACK_STARTED: Rastrear inicio de tareas (default: True)
+    """
+    # Variables requeridas
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+    
+    # Serialización (valores por defecto)
+    CELERY_TASK_SERIALIZER = os.getenv("CELERY_TASK_SERIALIZER", "json")
+    CELERY_ACCEPT_CONTENT = _csv("CELERY_ACCEPT_CONTENT") or ["json"]
+    CELERY_RESULT_SERIALIZER = os.getenv("CELERY_RESULT_SERIALIZER", "json")
+    
+    # Timezone (valores por defecto)
+    CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE", "UTC")
+    CELERY_ENABLE_UTC = os.getenv("CELERY_ENABLE_UTC", "True").lower() in ("true", "1", "yes")
+    
+    # Configuración de workers (valores por defecto)
+    # Prefetch multiplier: None = sin límite, los workers toman tareas según necesidad
+    prefetch_multiplier = os.getenv("CELERY_WORKER_PREFETCH_MULTIPLIER", "None")
+    if prefetch_multiplier.lower() == "none" or prefetch_multiplier == "":
+        CELERY_WORKER_PREFETCH_MULTIPLIER = None
+    else:
+        try:
+            CELERY_WORKER_PREFETCH_MULTIPLIER = int(prefetch_multiplier)
+        except ValueError:
+            CELERY_WORKER_PREFETCH_MULTIPLIER = None
+    
+    CELERY_TASK_ACKS_LATE = os.getenv("CELERY_TASK_ACKS_LATE", "True").lower() in ("true", "1", "yes")
+    
+    # Configuración de reintentos (valores por defecto)
+    CELERY_TASK_DEFAULT_RETRY_DELAY = int(os.getenv("CELERY_TASK_DEFAULT_RETRY_DELAY", "60"))
+    CELERY_TASK_MAX_RETRIES = int(os.getenv("CELERY_TASK_MAX_RETRIES", "3"))
+    
+    # Configuración de tareas (valores por defecto)
+    CELERY_TASK_TRACK_STARTED = os.getenv("CELERY_TASK_TRACK_STARTED", "True").lower() in ("true", "1", "yes")
+    
+    # Sin límites de tiempo por defecto (las tareas duran lo que necesiten)
+    # Estas variables no se usan, pero se pueden configurar si se necesita
+    # CELERY_TASK_TIME_LIMIT = os.getenv("CELERY_TASK_TIME_LIMIT")
+    # CELERY_TASK_SOFT_TIME_LIMIT = os.getenv("CELERY_TASK_SOFT_TIME_LIMIT")
+
+    @classmethod
+    def validate(cls):
+        """
+        Valida que las variables requeridas estén configuradas.
+        Las variables opcionales tienen valores por defecto, así que no se validan.
+        """
+        missing = []
+        if not cls.CELERY_BROKER_URL:
+            missing.append("CELERY_BROKER_URL")
+        if not cls.CELERY_RESULT_BACKEND:
+            missing.append("CELERY_RESULT_BACKEND")
+        
+        if missing:
+            raise EnvironmentError(f"❌ Faltan variables de entorno requeridas: {', '.join(missing)}")
