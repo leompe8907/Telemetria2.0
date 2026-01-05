@@ -111,7 +111,7 @@ def merge_ott_task(self, sync_result=None):
     """
     Tarea Celery para hacer merge de registros OTT.
     
-    Fusiona los registros OTT (actionId 7 y 8) y los guarda en MergedTelemetricOTT.
+    Fusiona los registros OTT (actionId 7 y 8) y los guarda en MergedTelemetricOTTDelancer.
     Esta tarea puede recibir el resultado de la tarea de sincronización anterior.
     
     Args:

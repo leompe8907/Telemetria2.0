@@ -7,6 +7,10 @@ Proporciona análisis agregado de todos los usuarios:
 - Top usuarios por diferentes métricas
 - Distribución temporal de usuarios activos
 - Métricas de engagement (retención, churn potencial)
+
+IMPORTANTE: Los análisis trabajan con datos de la base de datos local (MergedTelemetricOTTDelancer),
+NO consultan directamente a PanAccess. Los datos se obtienen de PanAccess mediante
+telemetry_fetcher.py y se almacenan localmente para análisis.
 """
 
 import logging
@@ -27,7 +31,7 @@ from django.db.models import (
     Count, Sum, Avg, Max, Min
 )
 
-from TelemetriaDelancer.models import MergedTelemetricOTT
+from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +57,7 @@ def get_general_users_analysis(start_date: Optional[datetime] = None,
     Returns:
         Dict con análisis completo de usuarios
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode__isnull=False
     )
     

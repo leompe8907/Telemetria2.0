@@ -121,3 +121,39 @@ class CeleryConfig:
         
         if missing:
             raise EnvironmentError(f"❌ Faltan variables de entorno requeridas: {', '.join(missing)}")
+
+class MariaConfig:
+    """
+    Configuración de base de datos MariaDB/MySQL.
+    
+    Variables requeridas:
+    - Maria_HOST: Host de la base de datos
+    - Maria_PORT: Puerto de la base de datos
+    - Maria_USER: Usuario de la base de datos
+    - Maria_NAME: Nombre de la base de datos
+    
+    Variables opcionales:
+    - Maria_PASSWORD: Contraseña de la base de datos (default: '')
+    """
+    Maria_HOST = os.getenv("Maria_HOST", "127.0.0.1")
+    Maria_PORT = os.getenv("Maria_PORT", "3307")
+    Maria_USER = os.getenv("Maria_USER", "root")
+    Maria_NAME = os.getenv("Maria_NAME") or os.getenv("Maria_DB")  # Soporta ambos nombres
+    Maria_PASSWORD = os.getenv("Maria_PASSWORD", "")
+
+    @classmethod
+    def validate(cls):
+        missing = []
+        if not cls.Maria_HOST:
+            missing.append("Maria_HOST")
+        if not cls.Maria_PORT:
+            missing.append("Maria_PORT")
+        if not cls.Maria_USER:
+            missing.append("Maria_USER")
+        if not cls.Maria_NAME:
+            missing.append("Maria_NAME o Maria_DB")
+        # Maria_PASSWORD es opcional, no se valida
+        
+        if missing:
+            raise EnvironmentError(f"❌ Faltan variables de entorno requeridas: {', '.join(missing)}")
+            

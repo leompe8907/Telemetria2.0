@@ -4,13 +4,21 @@ Módulo para obtener registros de telemetría desde PanAccess.
 Este módulo proporciona funciones para consultar getListOfTelemetryRecords
 usando el singleton de PanAccess, con manejo inteligente de descarga
 y procesamiento de timestamps.
+
+FLUJO DE DATOS:
+1. PanAccess API → getListOfTelemetryRecords() → Obtiene datos de PanAccess
+2. Los datos se procesan y guardan en TelemetryRecordEntryDelancer (BD local)
+3. Los análisis trabajan con la BD local, NO consultan PanAccess directamente
+
+IMPORTANTE: Este módulo es el ÚNICO punto de contacto con PanAccess para obtener datos.
+Los módulos de análisis (analytics.py, etc.) trabajan exclusivamente con la BD local.
 """
 import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from TelemetriaDelancer.server.panaccess_singleton import get_panaccess
-from TelemetriaDelancer.models import TelemetryRecordEntry
+from TelemetriaDelancer.models import TelemetryRecordEntryDelancer
 from TelemetriaDelancer.exceptions import PanAccessException
 
 logger = logging.getLogger(__name__)
@@ -27,7 +35,7 @@ def is_database_empty() -> bool:
     Returns:
         True si no hay registros en la BD, False si hay registros
     """
-    return not TelemetryRecordEntry.objects.exists()
+    return not TelemetryRecordEntryDelancer.objects.exists()
 
 
 def get_highest_record_id() -> Optional[int]:
@@ -37,7 +45,7 @@ def get_highest_record_id() -> Optional[int]:
     Returns:
         El recordId más alto, o None si la BD está vacía
     """
-    highest_record = TelemetryRecordEntry.objects.order_by('-recordId').first()
+    highest_record = TelemetryRecordEntryDelancer.objects.order_by('-recordId').first()
     return highest_record.recordId if highest_record else None
 
 
@@ -501,7 +509,7 @@ def save_telemetry_records(
     
     # Obtener recordIds existentes para evitar duplicados
     existing_record_ids = set(
-        TelemetryRecordEntry.objects.filter(
+        TelemetryRecordEntryDelancer.objects.filter(
             recordId__in=[r.get("recordId") for r in records if r.get("recordId")]
         ).values_list('recordId', flat=True)
     )
@@ -540,7 +548,7 @@ def save_telemetry_records(
                     logger.debug(f"dataDate inválido recordId {record_id}")
             
             # Crear objeto del modelo
-            telemetry_obj = TelemetryRecordEntry(
+            telemetry_obj = TelemetryRecordEntryDelancer(
                 actionId=record.get("actionId"),
                 actionKey=record.get("actionKey"),
                 anonymized=record.get("anonymized"),
@@ -575,7 +583,7 @@ def save_telemetry_records(
             # Guardar en lotes
             if len(telemetry_objects) >= batch_size:
                 with transaction.atomic():
-                    TelemetryRecordEntry.objects.bulk_create(
+                    TelemetryRecordEntryDelancer.objects.bulk_create(
                         telemetry_objects,
                         ignore_conflicts=True
                     )
@@ -594,7 +602,7 @@ def save_telemetry_records(
     if telemetry_objects:
         try:
             with transaction.atomic():
-                TelemetryRecordEntry.objects.bulk_create(
+                TelemetryRecordEntryDelancer.objects.bulk_create(
                     telemetry_objects,
                     ignore_conflicts=True
                 )

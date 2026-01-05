@@ -1,21 +1,141 @@
-# Análisis de Telemetría OTT - MergedTelemetricOTT
+# Análisis de Telemetría OTT - MergedTelemetricOTTDelancer
 
-> **Nota de Compatibilidad:** Las consultas SQL en este documento están optimizadas para **PostgreSQL** (migración futura). Son compatibles con SQLite para desarrollo, pero funcionarán mejor en PostgreSQL gracias a:
+> **Nota de Compatibilidad:** Las consultas SQL en este documento están optimizadas para **MySQL 8.0+ / MariaDB 10.2+**. Son compatibles con SQLite para desarrollo, pero funcionarán mejor en MySQL/MariaDB gracias a:
 > - Mejor optimización de índices
-> - Funciones de ventana (window functions) más eficientes
+> - Funciones de ventana (window functions) - MySQL 8.0+/MariaDB 10.2+
+> - CTEs (Common Table Expressions) - MySQL 8.0+/MariaDB 10.2+
 > - Mejor manejo de agregaciones complejas
-> - Soporte nativo para tipos de datos avanzados
+> 
+> **IMPORTANTE:** Los análisis trabajan con datos de la base de datos local (`MergedTelemetricOTTDelancer`),
+> NO consultan directamente a PanAccess. Los datos se obtienen de PanAccess mediante `telemetry_fetcher.py`
+> y se almacenan localmente para análisis eficientes.
 
 ## 📋 Índice
 
-1. [Análisis de Consumo por Canal](#análisis-de-consumo-por-canal)
-2. [Análisis Temporal](#análisis-temporal)
-3. [Análisis por Dispositivo](#análisis-por-dispositivo)
-4. [Análisis Geográfico](#análisis-geográfico)
-5. [Análisis de Comportamiento](#análisis-de-comportamiento)
-6. [Análisis Comparativos](#análisis-comparativos)
-7. [Análisis Avanzados](#análisis-avanzados)
-8. [Análisis de Negocio](#análisis-de-negocio)
+1. [Funciones Disponibles en `analytics.py`](#funciones-disponibles-en-analyticspy)
+2. [Análisis de Consumo por Canal](#análisis-de-consumo-por-canal)
+3. [Análisis Temporal](#análisis-temporal)
+4. [Análisis por Dispositivo](#análisis-por-dispositivo)
+5. [Análisis Geográfico](#análisis-geográfico)
+6. [Análisis de Comportamiento](#análisis-de-comportamiento)
+7. [Análisis Comparativos](#análisis-comparativos)
+8. [Análisis Avanzados](#análisis-avanzados)
+9. [Análisis de Negocio](#análisis-de-negocio)
+
+---
+
+## 🔧 Funciones Disponibles en `analytics.py`
+
+Este documento explica los conceptos y tipos de análisis disponibles. Las funciones reales implementadas en `TelemetriaDelancer/panaccess/analytics.py` son:
+
+### Funciones de Análisis por Canal
+
+1. **`get_top_channels(limit=10, start_date=None, end_date=None)`**
+   - Retorna: `List[Dict]` con `channel`, `total_views`, `percentage`
+   - Implementa: [Top Canales Más Vistos](#1-top-canales-más-vistos)
+   - Usa: Django ORM con agregaciones optimizadas
+
+2. **`get_channel_audience(start_date=None, end_date=None)`**
+   - Retorna: `List[Dict]` con `dataName`, `unique_devices`, `unique_users`, `total_views`, `total_watch_time`, `total_hours`
+   - Implementa: [Análisis de Audiencia por Canal](#2-análisis-de-audiencia-por-canal)
+   - Usa: Django ORM con COUNT DISTINCT
+
+3. **`get_peak_hours_by_channel(channel=None, start_date=None, end_date=None)`**
+   - Retorna: `List[Dict]` con `dataName`, `timeDate`, `views`
+   - Implementa: [Horarios Pico por Canal](#3-horarios-pico-por-canal)
+   - Usa: Django ORM con agrupación por canal y hora
+
+4. **`get_average_duration_by_channel(start_date=None, end_date=None)`**
+   - Retorna: `List[Dict]` con `dataName`, `avg_duration`, `total_views`, `total_watch_time`
+   - Implementa: [Duración Promedio por Canal](#4-duración-promedio-por-canal)
+   - Usa: Django ORM con AVG y SUM
+
+### Funciones de Análisis Temporal
+
+5. **`get_temporal_analysis(period='daily', start_date=None, end_date=None)`**
+   - Parámetros: `period` puede ser `'daily'`, `'weekly'`, o `'monthly'`
+   - Retorna: `List[Dict]` con `period`, `views`
+   - Implementa: [Análisis por Fecha](#5-análisis-por-fecha-datadate)
+   - Usa: Django ORM con `TruncDate`, `TruncWeek`, `TruncMonth` (MySQL/MariaDB) o Raw SQL (SQLite)
+
+### Funciones de Análisis Avanzados (Raw SQL)
+
+6. **`get_day_over_day_comparison(start_date=None, end_date=None)`**
+   - Retorna: `List[Dict]` con `dataDate`, `daily_views`, `previous_day_views`, `day_over_day_change`
+   - Implementa: [Comparación Temporal](#17-comparación-temporal)
+   - Usa: Raw SQL con CTEs y funciones de ventana (LAG) - Requiere MySQL 8.0+ / MariaDB 10.2+
+   - ⚠️ Requiere MySQL 8.0+ / MariaDB 10.2+ para funciones de ventana
+
+7. **`get_anomaly_detection(threshold_std=3.0, start_date=None, end_date=None)`**
+   - Retorna: `List[Dict]` con `dataDate`, `daily_views`, `average_views`, `standard_deviation`, `z_score`
+   - Implementa: [Análisis de Anomalías](#21-análisis-de-anomalías)
+   - Usa: Raw SQL con CTEs y STDDEV_POP/STDDEV_SAMP
+   - ⚠️ Requiere MySQL 8.0+ / MariaDB 10.2+ (usa STDDEV_SAMP en MySQL)
+
+### Funciones de Análisis por Franjas Horarias
+
+8. **`get_time_slot_analysis(start_date=None, end_date=None)`**
+   - Retorna: `Dict` con `time_slots` (madrugada, mañana, tarde, noche) y `summary`
+   - Cada franja incluye: `total_seconds`, `total_hours` (redondeado a 2 decimales), `total_views`
+   - Usa: Django ORM con `Case/When` para clasificar por franja horaria
+
+### Funciones de Resumen General
+
+9. **`get_general_summary(start_date=None, end_date=None)`**
+   - Retorna: `Dict` con `total_views`, `active_users`, `unique_devices`, `unique_channels`, `total_watch_time_seconds`, `total_watch_time_hours`
+   - Implementa: Resumen general del sistema
+   - Usa: Django ORM con agregaciones
+
+### Funciones de Análisis Geográfico
+
+10. **`get_geographic_analysis(start_date=None, end_date=None)`**
+    - Retorna: `List[Dict]` con `whoisCountry`, `whoisIsp`, `total_views`, `unique_devices`, `unique_users`
+    - Implementa: [Análisis por País](#10-análisis-por-país-whoiscountry)
+    - Usa: Django ORM con agrupación por país e ISP
+
+### Funciones de Análisis Avanzados (Pandas - Opcional)
+
+11. **`get_cohort_analysis_pandas(start_date=None, end_date=None)`**
+    - ⚠️ **Requiere Pandas/NumPy**
+    - Retorna: `Dict` con `data` (cohortes), `summary` (total_cohorts, total_users)
+    - Implementa: [Análisis de Cohortes](#22-análisis-de-cohortes)
+    - Usa: Pandas para análisis de cohortes
+
+12. **`get_correlation_analysis(start_date=None, end_date=None)`**
+    - ⚠️ **Requiere Pandas/NumPy**
+    - Retorna: `Dict` con `correlation_matrix`, `descriptive_stats`, `insights`
+    - Implementa: [Análisis de Correlaciones](#19-análisis-de-correlaciones)
+    - Usa: Pandas para calcular matriz de correlaciones
+
+13. **`get_time_series_analysis(channel=None, start_date=None, end_date=None, forecast_days=7)`**
+    - ⚠️ **Requiere Pandas/NumPy**
+    - Retorna: `Dict` con `historical_data`, `forecast`, `statistics`, `channel`
+    - Implementa: [Análisis Predictivo](#20-análisis-predictivo)
+    - Usa: Pandas y NumPy para forecasting con regresión lineal
+
+14. **`get_user_segmentation_analysis(start_date=None, end_date=None, n_segments=4)`**
+    - ⚠️ **Requiere Pandas/NumPy**
+    - Retorna: `Dict` con `segments`, `total_users`, `features_used`
+    - Implementa: Segmentación de usuarios usando K-means
+    - Usa: NumPy para K-means clustering (implementación simple)
+
+15. **`get_channel_performance_matrix(start_date=None, end_date=None)`**
+    - ⚠️ **Requiere Pandas/NumPy**
+    - Retorna: `Dict` con `performance_matrix`, `summary`
+    - Implementa: Matriz de rendimiento de canales con scoring
+    - Usa: Pandas para calcular métricas y scores normalizados
+
+### Notas Importantes sobre las Funciones
+
+- **Parámetros opcionales**: Todas las funciones aceptan `start_date` y `end_date` opcionales para filtrar por rango de fechas
+- **Filtros aplicados**: Se filtran automáticamente registros donde los campos relevantes son `None` (ej: `dataName__isnull=False`)
+- **Conversión de tiempo**: Los tiempos se almacenan en segundos (`dataDuration`) y se convierten a horas dividiendo por 3600.0
+- **Redondeo**: Todos los valores de horas se redondean a 2 decimales
+- **Base de datos local**: Todas las funciones trabajan con `MergedTelemetricOTTDelancer`, NO consultan PanAccess directamente
+- **Compatibilidad**: Las funciones con Raw SQL requieren MySQL 8.0+ / MariaDB 10.2+ para funciones de ventana y CTEs
+- **Pandas opcional**: Las funciones marcadas con ⚠️ requieren Pandas/NumPy instalados, si no están disponibles lanzan `ImportError`
+
+---
 
 ---
 
@@ -48,21 +168,48 @@ ORDER BY total_views DESC
 
 ### 2. Análisis de Audiencia por Canal
 
+**Función implementada:** `get_channel_audience(start_date=None, end_date=None)`
+
 **¿En qué consiste?**
 - Número de dispositivos únicos que consumen cada canal
-- Número de usuarios únicos (subscriberCode/smartcardId) por canal
+- Número de usuarios únicos (subscriberCode) por canal
+- Total de horas vistas por canal
 - Tasa de penetración de cada canal en la base de usuarios
 
 **¿Cómo se calcula?**
+- **Implementación:** Usa Django ORM con COUNT DISTINCT y SUM
+- **Consulta equivalente:**
 ```sql
 SELECT dataName,
        COUNT(DISTINCT deviceId) as unique_devices,
        COUNT(DISTINCT subscriberCode) as unique_users,
-       COUNT(*) as total_views
+       COUNT(*) as total_views,
+       SUM(dataDuration) as total_watch_time
 FROM merged_telemetric_ott
 WHERE dataName IS NOT NULL
 GROUP BY dataName
+ORDER BY total_views DESC
 ```
+
+**Retorna:**
+```python
+[
+    {
+        "dataName": "Canal Premium",
+        "unique_devices": 1800,  # Count distinct de deviceId
+        "unique_users": 2000,  # Count distinct de subscriberCode
+        "total_views": 10000,  # Count de registros
+        "total_watch_time": 900000.0,  # En segundos
+        "total_hours": 250.0  # Calculado desde segundos, redondeado a 2 decimales
+    },
+    ...
+]
+```
+
+**Notas:**
+- Ordenado por `total_views` descendente
+- `total_watch_time` está en segundos, `total_hours` se calcula dividiendo por 3600.0
+- Solo incluye canales donde `dataName` no es `None`
 
 **Impacto:**
 - **Diversificación**: Identificar si un canal tiene muchos views pero pocos usuarios (dependencia)
@@ -74,12 +221,16 @@ GROUP BY dataName
 
 ### 3. Horarios Pico por Canal
 
+**Función implementada:** `get_peak_hours_by_channel(channel=None, start_date=None, end_date=None)`
+
 **¿En qué consiste?**
 - Identificar las franjas horarias (timeDate) con mayor consumo para cada canal
 - Patrones diarios de visualización por canal
 - Comparación de horarios pico entre diferentes canales
 
 **¿Cómo se calcula?**
+- **Implementación:** Usa Django ORM con agrupación por canal y hora
+- **Consulta equivalente:**
 ```sql
 SELECT dataName, timeDate, COUNT(*) as views
 FROM merged_telemetric_ott
@@ -87,6 +238,23 @@ WHERE dataName IS NOT NULL AND timeDate IS NOT NULL
 GROUP BY dataName, timeDate
 ORDER BY dataName, views DESC
 ```
+
+**Retorna:**
+```python
+[
+    {
+        "dataName": "Canal Premium",
+        "timeDate": 20,  # Hora del día (0-23)
+        "views": 500  # Count de registros en esa hora
+    },
+    ...
+]
+```
+
+**Notas:**
+- Si se proporciona `channel`, filtra solo ese canal
+- Ordenado por `dataName` y luego por `views` descendente
+- Solo incluye registros donde `dataName` y `timeDate` no son `None`
 
 **Impacto:**
 - **Programación**: Optimizar horarios de programación especial
@@ -98,22 +266,44 @@ ORDER BY dataName, views DESC
 
 ### 4. Duración Promedio por Canal
 
+**Función implementada:** `get_average_duration_by_channel(start_date=None, end_date=None)`
+
 **¿En qué consiste?**
 - Tiempo promedio de visualización (dataDuration) por canal
 - Comparación de duración entre diferentes canales
 - Identificación de canales con mayor retención de audiencia
 
 **¿Cómo se calcula?**
+- **Implementación:** Usa Django ORM con AVG, COUNT y SUM
+- **Consulta equivalente:**
 ```sql
 SELECT dataName,
-       AVG(dataDuration) as avg_duration_seconds,
-       AVG(dataDuration) / 60.0 as avg_duration_minutes,
-       COUNT(*) as total_sessions
+       AVG(dataDuration) as avg_duration,
+       COUNT(*) as total_views,
+       SUM(dataDuration) as total_watch_time
 FROM merged_telemetric_ott
 WHERE dataName IS NOT NULL AND dataDuration IS NOT NULL
 GROUP BY dataName
-ORDER BY avg_duration_seconds DESC
+ORDER BY avg_duration DESC
 ```
+
+**Retorna:**
+```python
+[
+    {
+        "dataName": "Canal Premium",
+        "avg_duration": 1356.0,  # Promedio en segundos (float)
+        "total_views": 10000,  # Count de registros
+        "total_watch_time": 13560000.0  # Suma en segundos (float)
+    },
+    ...
+]
+```
+
+**Notas:**
+- Ordenado por `avg_duration` descendente
+- `avg_duration` y `total_watch_time` están en segundos
+- Solo incluye canales donde `dataName` y `dataDuration` no son `None`
 
 **Impacto:**
 - **Calidad de contenido**: Canales con mayor duración indican mejor contenido
@@ -127,37 +317,56 @@ ORDER BY avg_duration_seconds DESC
 
 ### 5. Análisis por Fecha (dataDate)
 
+**Función implementada:** `get_temporal_analysis(period='daily', start_date=None, end_date=None)`
+
 **¿En qué consiste?**
 - Consumo diario, semanal y mensual de contenido OTT
 - Identificación de tendencias temporales
 - Comparación de consumo entre diferentes períodos (días, semanas, meses)
 
 **¿Cómo se calcula?**
+- **Implementación:** 
+  - MySQL/MariaDB: Usa Django ORM con `TruncDate`, `TruncWeek`, `TruncMonth`
+  - SQLite: Usa Raw SQL con `date()` y `strftime()` como fallback
+- **Consulta equivalente:**
 ```sql
--- Diario
-SELECT dataDate, COUNT(*) as daily_views
-FROM merged_telemetric_ott
-GROUP BY dataDate
-ORDER BY dataDate DESC
-
--- Semanal (PostgreSQL optimizado)
-SELECT DATE_TRUNC('week', dataDate) as week, COUNT(*) as weekly_views
+-- Diario (MySQL/MariaDB con Django ORM)
+SELECT TruncDate(dataDate) as period, COUNT(*) as views
 FROM merged_telemetric_ott
 WHERE dataDate IS NOT NULL
-GROUP BY DATE_TRUNC('week', dataDate)
-ORDER BY week DESC
+GROUP BY period
+ORDER BY period
 
--- Mensual (PostgreSQL optimizado)
-SELECT DATE_TRUNC('month', dataDate) as month, COUNT(*) as monthly_views
+-- Semanal (MySQL/MariaDB con Django ORM)
+SELECT TruncWeek(dataDate) as period, COUNT(*) as views
 FROM merged_telemetric_ott
 WHERE dataDate IS NOT NULL
-GROUP BY DATE_TRUNC('month', dataDate)
-ORDER BY month DESC
+GROUP BY period
+ORDER BY period
 
--- Alternativa SQLite (para desarrollo)
--- SELECT strftime('%Y-W%W', dataDate) as week, COUNT(*) as weekly_views
--- SELECT strftime('%Y-%m', dataDate) as month, COUNT(*) as monthly_views
+-- Mensual (MySQL/MariaDB con Django ORM)
+SELECT TruncMonth(dataDate) as period, COUNT(*) as views
+FROM merged_telemetric_ott
+WHERE dataDate IS NOT NULL
+GROUP BY period
+ORDER BY period
 ```
+
+**Retorna:**
+```python
+[
+    {
+        "period": "2025-01-01",  # Para daily (date object)
+        "views": 5000  # Count de registros
+    },
+    ...
+]
+```
+
+**Notas:**
+- `period` puede ser `'daily'`, `'weekly'`, o `'monthly'`
+- Para SQLite, usa Raw SQL como fallback (TruncDate no funciona en SQLite)
+- Solo incluye registros donde `dataDate` no es `None`
 
 **Impacto:**
 - **Planificación**: Anticipar demanda en fechas específicas (festivos, eventos)
@@ -279,22 +488,45 @@ ORDER BY total_views DESC
 
 ### 10. Análisis por País (whoisCountry)
 
+**Función implementada:** `get_geographic_analysis(start_date=None, end_date=None)`
+
 **¿En qué consiste?**
-- Distribución de consumo de contenido por país
+- Distribución de consumo de contenido por país e ISP
 - Canales más populares por región geográfica
 - Patrones de consumo regionales
 
 **¿Cómo se calcula?**
+- **Implementación:** Usa Django ORM con agrupación por país e ISP
+- **Consulta equivalente:**
 ```sql
-SELECT whoisCountry,
+SELECT whoisCountry, whoisIsp,
        COUNT(*) as total_views,
-       COUNT(DISTINCT dataName) as unique_channels,
-       COUNT(DISTINCT deviceId) as unique_devices
+       COUNT(DISTINCT deviceId) as unique_devices,
+       COUNT(DISTINCT subscriberCode) as unique_users
 FROM merged_telemetric_ott
 WHERE whoisCountry IS NOT NULL
-GROUP BY whoisCountry
+GROUP BY whoisCountry, whoisIsp
 ORDER BY total_views DESC
 ```
+
+**Retorna:**
+```python
+[
+    {
+        "whoisCountry": "US",
+        "whoisIsp": "ISP Name",
+        "total_views": 50000,  # Count de registros
+        "unique_devices": 5000,  # Count distinct de deviceId
+        "unique_users": 4500  # Count distinct de subscriberCode
+    },
+    ...
+]
+```
+
+**Notas:**
+- Agrupa por país E ISP (combinación de ambos)
+- Ordenado por `total_views` descendente
+- Solo incluye registros donde `whoisCountry` no es `None`
 
 **Impacto:**
 - **Expansión**: Identificar mercados con potencial de crecimiento
@@ -479,14 +711,18 @@ ORDER BY total_views DESC
 
 ### 17. Comparación Temporal
 
+**Función implementada:** `get_day_over_day_comparison(start_date=None, end_date=None)`
+
 **¿En qué consiste?**
-- Comparación de consumo día a día, semana a semana, mes a mes
+- Comparación de consumo día a día
 - Identificación de tendencias y patrones temporales
 - Análisis de crecimiento o declive
 
 **¿Cómo se calcula?**
+- **Implementación:** Usa Raw SQL con CTEs y funciones de ventana (LAG)
+- **Consulta equivalente:**
 ```sql
--- Comparación día a día (PostgreSQL optimizado con CTE)
+-- Comparación día a día (MySQL 8.0+ / MariaDB 10.2+ optimizado con CTE)
 WITH daily_stats AS (
     SELECT dataDate, COUNT(*) as daily_views
     FROM merged_telemetric_ott
@@ -496,15 +732,29 @@ WITH daily_stats AS (
 SELECT dataDate,
        daily_views,
        LAG(daily_views) OVER (ORDER BY dataDate) as previous_day_views,
-       daily_views - LAG(daily_views) OVER (ORDER BY dataDate) as day_over_day_change,
-       ROUND(
-           ((daily_views - LAG(daily_views) OVER (ORDER BY dataDate))::numeric / 
-            NULLIF(LAG(daily_views) OVER (ORDER BY dataDate), 0)) * 100, 
-           2
-       ) as day_over_day_percentage
+       daily_views - LAG(daily_views) OVER (ORDER BY dataDate) as day_over_day_change
 FROM daily_stats
 ORDER BY dataDate DESC
 ```
+
+**Retorna:**
+```python
+[
+    {
+        "dataDate": "2025-01-15",  # date object
+        "daily_views": 5000,  # Count de registros ese día
+        "previous_day_views": 4800,  # Count del día anterior (LAG)
+        "day_over_day_change": 200  # Diferencia absoluta
+    },
+    ...
+]
+```
+
+**Notas:**
+- ⚠️ **Requiere MySQL 8.0+ / MariaDB 10.2+** para funciones de ventana (LAG)
+- Compatible con SQLite para desarrollo (con limitaciones)
+- Solo incluye días con actividad
+- Ordenado por `dataDate` descendente
 
 **Impacto:**
 - **Tendencias**: Identificar tendencias de crecimiento o declive
@@ -570,16 +820,58 @@ ORDER BY timeDate, views DESC
 
 ---
 
-### 20. Análisis Predictivo
+### 20. Análisis Predictivo (Series Temporales)
+
+**Función implementada:** `get_time_series_analysis(channel=None, start_date=None, end_date=None, forecast_days=7)`
 
 **¿En qué consiste?**
 - Predicción de consumo futuro basado en patrones históricos
-- Predicción de canales que serán populares
-- Predicción de horarios pico futuros
+- Análisis de tendencias temporales con regresión lineal
+- Pronóstico simple usando media móvil y extrapolación de tendencia
 
 **¿Cómo se calcula?**
-- Requiere modelos de machine learning o análisis estadístico avanzado
-- Basado en tendencias temporales, estacionalidad, y patrones históricos
+- **Implementación:** Usa Pandas y NumPy para análisis de series temporales
+- **Proceso:**
+  1. Agrupa datos por día (`dataDate`)
+  2. Calcula media móvil de 7 días
+  3. Calcula tendencia lineal usando regresión (`np.polyfit`)
+  4. Genera pronóstico extrapolando la tendencia
+
+**Retorna:**
+```python
+{
+    "historical_data": [
+        {
+            "dataDate": "2025-01-01",
+            "views": 5000,
+            "moving_avg_7d": 4800.0,  # Media móvil de 7 días
+            "trend": 4950.0  # Valor de la línea de tendencia
+        },
+        ...
+    ],
+    "forecast": [
+        {
+            "dataDate": "2025-01-08",
+            "forecast": 5200.0,  # Pronóstico basado en tendencia
+            "moving_avg_forecast": 5000.0  # Última media móvil
+        },
+        ...
+    ],
+    "statistics": {
+        "mean": 5000.0,  # Promedio de visualizaciones diarias
+        "std": 500.2,  # Desviación estándar
+        "trend_slope": 50.5,  # Pendiente de la tendencia (cambio por día)
+        "trend_direction": "creciente"  # "creciente", "decreciente", o "estable"
+    },
+    "channel": "Canal Premium"  # O "Todos los canales" si channel es None
+}
+```
+
+**Notas:**
+- ⚠️ **Requiere Pandas/NumPy** - Si no están instalados, lanza `ImportError`
+- `forecast_days` por defecto es 7 (puede ajustarse)
+- Si se proporciona `channel`, filtra solo ese canal
+- Si no hay datos, retorna: `{"message": "No hay datos para análisis de series temporales"}`
 
 **Impacto:**
 - **Planificación**: Anticipar demanda futura
@@ -591,14 +883,18 @@ ORDER BY timeDate, views DESC
 
 ### 21. Análisis de Anomalías
 
+**Función implementada:** `get_anomaly_detection(threshold_std=3.0, start_date=None, end_date=None)`
+
 **¿En qué consiste?**
 - Detección de patrones inusuales o anómalos en el consumo
 - Identificación de picos anómalos de consumo
 - Detección de posibles problemas técnicos o fraude
 
 **¿Cómo se calcula?**
+- **Implementación:** Usa Raw SQL con CTEs y STDDEV_POP/STDDEV_SAMP
+- **Consulta equivalente:**
 ```sql
--- Detectar picos anómalos (consumo > 3 desviaciones estándar) - PostgreSQL optimizado
+-- Detectar picos anómalos (consumo > threshold_std desviaciones estándar)
 WITH daily_counts AS (
     SELECT dataDate, COUNT(*) as daily_views
     FROM merged_telemetric_ott
@@ -608,7 +904,7 @@ WITH daily_counts AS (
 stats AS (
     SELECT 
         AVG(daily_views) as avg_views,
-        STDDEV_POP(daily_views) as stddev_views
+        STDDEV_SAMP(daily_views) as stddev_views  -- STDDEV_SAMP en MySQL
     FROM daily_counts
 )
 SELECT dc.dataDate, dc.daily_views,
@@ -617,9 +913,30 @@ SELECT dc.dataDate, dc.daily_views,
        ROUND((dc.daily_views - s.avg_views) / NULLIF(s.stddev_views, 0), 2) as z_score
 FROM daily_counts dc
 CROSS JOIN stats s
-WHERE dc.daily_views > (s.avg_views + 3 * s.stddev_views)
+WHERE dc.daily_views > (s.avg_views + threshold_std * s.stddev_views)
 ORDER BY dc.daily_views DESC
 ```
+
+**Retorna:**
+```python
+[
+    {
+        "dataDate": "2025-01-15",  # date object
+        "daily_views": 10000,  # Count de registros ese día
+        "average_views": 5000.0,  # Promedio de visualizaciones diarias
+        "standard_deviation": 1000.0,  # Desviación estándar
+        "z_score": 5.0  # Z-score redondeado a 2 decimales
+    },
+    ...
+]
+```
+
+**Notas:**
+- ⚠️ **Requiere MySQL 8.0+ / MariaDB 10.2+** para CTEs y STDDEV
+- `threshold_std` por defecto es 3.0 (puede ajustarse)
+- En MySQL usa `STDDEV_SAMP` (ajustado automáticamente en el código)
+- En SQLite usa `STDDEV` (ajustado automáticamente en el código)
+- Solo retorna días donde `z_score > threshold_std`
 
 **Impacto:**
 - **Seguridad**: Detectar uso fraudulento o abusivo
@@ -631,35 +948,49 @@ ORDER BY dc.daily_views DESC
 
 ### 22. Análisis de Cohortes
 
+**Función implementada:** `get_cohort_analysis_pandas(start_date=None, end_date=None)`
+
 **¿En qué consiste?**
 - Análisis de comportamiento de grupos de usuarios por fecha de inicio
 - Evolución del comportamiento de consumo por cohorte
 - Comparación de retención entre diferentes cohortes
 
 **¿Cómo se calcula?**
+- **Implementación:** Usa Pandas para análisis de cohortes
+- **Consulta equivalente (concepto):**
 ```sql
--- Cohortes por mes de primer uso (PostgreSQL optimizado)
-WITH user_first_view AS (
-    SELECT 
-        subscriberCode,
-        DATE_TRUNC('month', MIN(timestamp)) as cohort_month,
-        COUNT(*) as total_views,
-        COUNT(DISTINCT dataName) as unique_channels,
-        SUM(dataDuration) as total_watch_time
-    FROM merged_telemetric_ott
-    WHERE subscriberCode IS NOT NULL AND timestamp IS NOT NULL
-    GROUP BY subscriberCode
-)
-SELECT 
-    TO_CHAR(cohort_month, 'YYYY-MM') as cohort_month,
-    COUNT(DISTINCT subscriberCode) as cohort_size,
-    AVG(total_views) as avg_views_per_user,
-    AVG(unique_channels) as avg_channels_per_user,
-    AVG(total_watch_time) as avg_watch_time_per_user
-FROM user_first_view
-GROUP BY cohort_month
-ORDER BY cohort_month DESC
+-- Cohortes por mes de primer uso (concepto, implementado con Pandas)
+-- Se agrupa por subscriberCode y se calcula el mes de primera actividad
+-- Luego se analiza comportamiento por cohorte y período
 ```
+
+**Retorna:**
+```python
+{
+    "data": [
+        {
+            "cohort_month": "2024-12",  # Período de la cohorte
+            "period": "2025-01",  # Período de análisis
+            "subscriberCode": 500,  # Usuarios únicos en ese período
+            "dataName": 25,  # Canales únicos
+            "dataDuration": 1250000.0,  # Tiempo total en segundos
+            "cohort_size": 1000,  # Tamaño inicial de la cohorte
+            "retention_rate": 50.0  # Porcentaje de retención
+        },
+        ...
+    ],
+    "summary": {
+        "total_cohorts": 12,
+        "total_users": 5000
+    }
+}
+```
+
+**Notas:**
+- ⚠️ **Requiere Pandas/NumPy** - Si no están instalados, lanza `ImportError`
+- Usa Pandas para agrupar usuarios por mes de primera actividad
+- Calcula retención como: `(usuarios activos en período / tamaño inicial de cohorte) * 100`
+- Solo incluye usuarios donde `subscriberCode` y `timestamp` no son `None`
 
 **Impacto:**
 - **Retención**: Entender cómo evoluciona la retención por cohorte
@@ -808,121 +1139,111 @@ ORDER BY satisfaction_rate DESC
 
 ---
 
-## 🚀 Optimizaciones para PostgreSQL
+## 🚀 Optimizaciones para MySQL/MariaDB
 
 ### Índices Recomendados
 
-Las consultas están optimizadas para aprovechar los siguientes índices (ya creados en el modelo):
+Las consultas están optimizadas para aprovechar los siguientes índices (ya creados en el modelo Django):
+
+Los índices se crean automáticamente mediante las migraciones de Django. Los índices definidos en `MergedTelemetricOTTDelancer` son:
+
+- `idx_ott_actionid_timestamp`: Para filtros por actionId y timestamp
+- `idx_ott_datadate_timedate`: Para análisis por fecha y hora
+- `idx_ott_dataname`: Para agrupaciones por canal
+- `idx_ott_deviceid_datadate`: Para análisis por dispositivo
+- `idx_ott_recordid`: Para búsquedas por recordId
+
+### Índices Adicionales Recomendados para MySQL/MariaDB
 
 ```sql
--- Índices existentes en MergedTelemetricOTT
-CREATE INDEX idx_ott_actionid_timestamp ON merged_telemetric_ott(actionId, timestamp);
-CREATE INDEX idx_ott_datadate_timedate ON merged_telemetric_ott(dataDate, timeDate);
-CREATE INDEX idx_ott_dataname ON merged_telemetric_ott(dataName);
-CREATE INDEX idx_ott_deviceid_datadate ON merged_telemetric_ott(deviceId, dataDate);
-CREATE INDEX idx_ott_recordid ON merged_telemetric_ott(recordId);
-```
-
-### Índices Adicionales Recomendados para PostgreSQL
-
-```sql
--- Índice compuesto para análisis de usuarios
-CREATE INDEX idx_ott_subscriber_datadate ON merged_telemetric_ott(subscriberCode, dataDate) 
-WHERE subscriberCode IS NOT NULL;
+-- Índice compuesto para análisis de usuarios (MySQL 8.0+ / MariaDB 10.2+)
+CREATE INDEX idx_ott_subscriber_datadate ON merged_telemetric_ott(subscriberCode, dataDate);
 
 -- Índice para análisis geográfico
-CREATE INDEX idx_ott_country_isp ON merged_telemetric_ott(whoisCountry, whoisIsp) 
-WHERE whoisCountry IS NOT NULL;
+CREATE INDEX idx_ott_country_isp ON merged_telemetric_ott(whoisCountry, whoisIsp);
 
 -- Índice para análisis de duración
-CREATE INDEX idx_ott_duration_dataname ON merged_telemetric_ott(dataDuration, dataName) 
-WHERE dataDuration IS NOT NULL AND dataName IS NOT NULL;
-
--- Índice parcial para actionId=8 (mayoría de registros)
-CREATE INDEX idx_ott_action8_datadate ON merged_telemetric_ott(dataDate, dataName) 
-WHERE actionId = 8;
+CREATE INDEX idx_ott_duration_dataname ON merged_telemetric_ott(dataDuration, dataName);
 ```
 
-### Ventajas de PostgreSQL sobre SQLite
+**Nota:** MySQL/MariaDB no soportan índices parciales (con WHERE) como PostgreSQL, pero los índices compuestos funcionan bien.
+
+### Ventajas de MySQL 8.0+ / MariaDB 10.2+
 
 1. **Mejor Optimización de Consultas**
-   - Planner más avanzado que optimiza automáticamente
+   - Optimizador mejorado en versiones recientes
    - Mejor uso de índices múltiples
-   - Estadísticas más precisas para optimización
+   - Estadísticas de tablas para optimización
 
 2. **Funciones de Ventana (Window Functions)**
-   - `LAG()`, `LEAD()`, `ROW_NUMBER()` más eficientes
-   - Particionamiento avanzado
+   - `LAG()`, `LEAD()`, `ROW_NUMBER()` disponibles desde MySQL 8.0+ / MariaDB 10.2+
    - Mejor rendimiento en agregaciones complejas
+   - Compatible con estándar SQL
 
 3. **CTEs (Common Table Expressions)**
-   - Materialización automática cuando es beneficioso
+   - Disponibles desde MySQL 8.0+ / MariaDB 10.2+
    - Mejor legibilidad y mantenibilidad
-   - Optimización automática por el planner
+   - Optimización automática por el optimizador
 
-4. **Tipos de Datos Avanzados**
-   - Tipos de fecha/hora más precisos
-   - Arrays y JSON nativos
+4. **Tipos de Datos**
+   - Tipos de fecha/hora precisos
+   - JSON nativo (MySQL 5.7+ / MariaDB 10.2+)
    - Mejor manejo de NULLs
 
 5. **Concurrencia**
-   - Mejor manejo de múltiples usuarios simultáneos
-   - Transacciones más robustas
-   - Locking más eficiente
+   - Buen manejo de múltiples usuarios simultáneos
+   - Transacciones robustas
+   - Locking eficiente
 
-### Mejores Prácticas para PostgreSQL
+### Mejores Prácticas para MySQL/MariaDB
 
-1. **Usar EXPLAIN ANALYZE**
+1. **Usar EXPLAIN**
    ```sql
-   EXPLAIN ANALYZE SELECT ...;
+   EXPLAIN SELECT ...;
    ```
    - Verificar que se usen los índices correctos
    - Identificar cuellos de botella
+   - MySQL 8.0+ incluye `EXPLAIN ANALYZE` (similar a PostgreSQL)
 
-2. **VACUUM y ANALYZE Regular**
+2. **ANALYZE TABLE Regular**
    ```sql
-   VACUUM ANALYZE merged_telemetric_ott;
+   ANALYZE TABLE merged_telemetric_ott;
    ```
    - Mantener estadísticas actualizadas
-   - Mejorar rendimiento del planner
+   - Mejorar rendimiento del optimizador
 
 3. **Particionamiento (Para Tablas Muy Grandes)**
    - Particionar por `dataDate` si la tabla crece mucho
    - Mejora significativa en consultas por rango de fechas
+   - Disponible en MySQL 5.7+ / MariaDB 10.0+
 
-4. **Materialized Views (Para Análisis Frecuentes)**
-   ```sql
-   CREATE MATERIALIZED VIEW mv_top_channels AS
-   SELECT dataName, COUNT(*) as total_views
-   FROM merged_telemetric_ott
-   GROUP BY dataName;
-   
-   CREATE UNIQUE INDEX ON mv_top_channels(dataName);
-   REFRESH MATERIALIZED VIEW CONCURRENTLY mv_top_channels;
-   ```
+4. **Usar Cache para Análisis Frecuentes**
+   - El sistema ya implementa cache con Redis
+   - Los resultados de análisis se cachean automáticamente
+   - Ver `TelemetriaDelancer/mixins.py` para detalles
 
-### Compatibilidad SQLite vs PostgreSQL
+### Compatibilidad SQLite vs MySQL/MariaDB
 
-| Función | SQLite | PostgreSQL | Nota |
-|---------|--------|------------|------|
-| Formato fecha | `strftime('%Y-%m', date)` | `TO_CHAR(date, 'YYYY-MM')` o `DATE_TRUNC('month', date)` | PostgreSQL más eficiente |
-| Desviación estándar | `STDDEV()` | `STDDEV_POP()` o `STDDEV_SAMP()` | PostgreSQL más preciso |
-| Funciones ventana | Limitado | Completo | PostgreSQL mucho mejor |
-| CTEs | Básico | Avanzado | PostgreSQL optimiza mejor |
-| Índices parciales | No | Sí | PostgreSQL permite `WHERE` en índices |
+| Función | SQLite | MySQL 8.0+ / MariaDB 10.2+ | Nota |
+|---------|--------|---------------------------|------|
+| Formato fecha | `strftime('%Y-%m', date)` | `DATE_FORMAT(date, '%Y-%m')` o `YEAR(date), MONTH(date)` | MySQL más eficiente |
+| Desviación estándar | `STDDEV()` | `STDDEV_SAMP()` o `STDDEV_POP()` | MySQL más preciso |
+| Funciones ventana | Limitado | Completo (8.0+) | MySQL 8.0+ mucho mejor |
+| CTEs | Básico | Avanzado (8.0+) | MySQL 8.0+ optimiza mejor |
+| Índices parciales | No | No | Solo PostgreSQL soporta WHERE en índices |
 
-### Migración de Consultas
+### Notas de Implementación
 
-Todas las consultas en este documento están escritas para PostgreSQL. Para usar en SQLite durante desarrollo:
+Todas las consultas en este documento están optimizadas para MySQL 8.0+ / MariaDB 10.2+. Para versiones anteriores:
 
-- Reemplazar `DATE_TRUNC()` por `strftime()`
-- Reemplazar `STDDEV_POP()` por `STDDEV()`
-- Simplificar CTEs complejas si es necesario
-- Las funciones de ventana básicas funcionan en ambos
+- Reemplazar funciones de ventana por subconsultas
+- Reemplazar `STDDEV_POP()` por `STDDEV_SAMP()` o cálculos manuales
+- Simplificar CTEs si es necesario
+- Usar principalmente Django ORM (funciona en todas las versiones)
 
 ---
 
 **Documento creado:** 2025-12-31  
 **Última actualización:** 2025-12-31  
-**Versión:** 1.1 (Optimizado para PostgreSQL)
+**Versión:** 1.2 (Optimizado para MySQL 8.0+ / MariaDB 10.2+)
 

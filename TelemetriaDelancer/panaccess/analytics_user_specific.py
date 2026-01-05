@@ -6,6 +6,10 @@ Proporciona análisis detallado de un usuario individual:
 - Comportamiento de consumo (canales, horarios, dispositivos)
 - Patrones temporales (día de semana, hora del día)
 - Estadísticas del usuario
+
+IMPORTANTE: Los análisis trabajan con datos de la base de datos local (MergedTelemetricOTTDelancer),
+NO consultan directamente a PanAccess. Los datos se obtienen de PanAccess mediante
+telemetry_fetcher.py y se almacenan localmente para análisis.
 """
 
 import logging
@@ -16,7 +20,7 @@ from django.db.models import (
     Count, Sum, Avg, Max, Min, Case, When, Value, CharField
 )
 
-from TelemetriaDelancer.models import MergedTelemetricOTT
+from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +45,7 @@ def get_user_analysis(subscriber_code: str,
     Returns:
         Dict con análisis completo del usuario
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode=subscriber_code
     )
     

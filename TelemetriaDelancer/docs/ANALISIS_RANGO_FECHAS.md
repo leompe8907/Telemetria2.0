@@ -4,6 +4,8 @@
 
 Este módulo (`analytics_date_range.py`) proporciona análisis específicos para períodos de tiempo definidos por el usuario. A diferencia del módulo general de análisis, **todas las funciones requieren rangos de fechas obligatorios** y están optimizadas para análisis comparativos y detallados de períodos específicos.
 
+**IMPORTANTE:** Los análisis trabajan con datos de la base de datos local (`MergedTelemetricOTTDelancer`), NO consultan directamente a PanAccess. Los datos se obtienen de PanAccess mediante `telemetry_fetcher.py` y se almacenan localmente para análisis.
+
 ---
 
 ## 🎯 Funciones Disponibles
@@ -29,14 +31,36 @@ Resumen general del período seleccionado.
         "unique_users": 5000,
         "unique_devices": 4500,
         "unique_channels": 25,
-        "total_watch_time": 125000.5,
-        "avg_duration": 45.2,
+        "total_watch_time_seconds": 450000.0,  # Tiempo total en segundos
+        "total_watch_time_hours": 125.0,  # Tiempo total en horas (redondeado a 2 decimales)
+        "avg_duration": 45.2,  # Duración promedio en segundos
+        "max_duration": 3600.0,  # Duración máxima en segundos
+        "min_duration": 5.0,  # Duración mínima en segundos
         "avg_views_per_day": 7142.86
     },
-    "top_channels": [...],
-    "daily_distribution": [...]
+    "top_channels": [
+        {
+            "dataName": "Canal Premium",
+            "views": 10000,
+            "unique_users": 2000
+        },
+        ...
+    ],
+    "daily_distribution": [
+        {
+            "dataDate": "2025-01-01",
+            "views": 7000
+        },
+        ...
+    ]
 }
 ```
+
+**Notas importantes:**
+- `total_watch_time_seconds`: Tiempo total de visualización en segundos
+- `total_watch_time_hours`: Tiempo total de visualización en horas (calculado desde segundos)
+- `top_channels`: Top 10 canales del período (limitado a 10)
+- `daily_distribution`: Distribución de visualizaciones por día en el período
 
 **Ejemplo de uso:**
 ```python
@@ -155,26 +179,34 @@ Análisis detallado de canales en el período seleccionado.
 **Retorna:**
 ```python
 {
-    "period": {...},
-    "total_channels": 25,
-    "total_period_views": 50000,
+    "period": {
+        "start_date": "2025-01-01",
+        "end_date": "2025-01-07"
+    },
+    "total_channels": 25,  # Total de canales únicos en el período
+    "total_period_views": 50000,  # Total de visualizaciones en el período
     "channels": [
         {
             "dataName": "Canal Premium",
             "total_views": 10000,
             "unique_users": 2000,
             "unique_devices": 1800,
-            "total_watch_time": 25000.5,
-            "avg_duration": 50.2,
-            "active_days": 7,
-            "percentage": 20.0,
-            "views_per_user": 5.0,
-            "watch_time_per_user": 12.5
+            "total_watch_time": 25000.5,  # En segundos
+            "avg_duration": 50.2,  # En segundos
+            "active_days": 7,  # Días en que el canal tuvo actividad
+            "percentage": 20.0,  # Porcentaje del total de visualizaciones
+            "views_per_user": 5.0,  # Promedio de visualizaciones por usuario
+            "watch_time_per_user": 12.5  # Promedio de tiempo de visualización por usuario (en segundos)
         },
         ...
     ]
 }
 ```
+
+**Notas importantes:**
+- Los canales están ordenados por `total_views` descendente
+- `top_n` limita el número de canales retornados (default: 20)
+- `total_watch_time` y `watch_time_per_user` están en segundos
 
 ---
 
@@ -190,24 +222,35 @@ Análisis de comportamiento de usuarios en el período.
 **Retorna:**
 ```python
 {
-    "period": {...},
-    "total_users": 5000,
+    "period": {
+        "start_date": "2025-01-01",
+        "end_date": "2025-01-07"
+    },
+    "total_users": 5000,  # Total de usuarios únicos en el período
     "top_users": [
         {
             "subscriberCode": "USER123",
             "total_views": 150,
             "unique_channels": 10,
             "unique_devices": 2,
-            "total_watch_time": 5000.5,
-            "avg_duration": 45.2,
-            "active_days": 7,
-            "activity_rate": 100.0,
-            "avg_views_per_day": 21.43
+            "total_watch_time": 5000.5,  # En segundos
+            "avg_duration": 45.2,  # En segundos
+            "active_days": 7,  # Días en que el usuario tuvo actividad
+            "first_view_date": "2025-01-01",  # Primera fecha de actividad
+            "last_view_date": "2025-01-07",  # Última fecha de actividad
+            "activity_rate": 100.0,  # Porcentaje de días activos del total del período
+            "avg_views_per_day": 21.43  # Promedio de visualizaciones por día activo
         },
         ...
     ]
 }
 ```
+
+**Notas importantes:**
+- Los usuarios están ordenados por `total_views` descendente
+- `top_n` limita el número de usuarios retornados (default: 50)
+- `activity_rate` se calcula como: (active_days / días_en_período) * 100
+- `avg_views_per_day` se calcula como: total_views / active_days (no días del período)
 
 ---
 
@@ -223,26 +266,59 @@ Identifica eventos y picos anómalos dentro del período.
 **Retorna:**
 ```python
 {
-    "period": {...},
+    "period": {
+        "start_date": "2025-01-01",
+        "end_date": "2025-01-07"
+    },
     "statistics": {
-        "mean_daily_views": 7142.86,
-        "std_daily_views": 500.2,
-        "total_days": 7,
-        "threshold_std": 2.0
+        "mean_daily_views": 7142.86,  # Promedio de visualizaciones por día
+        "std_daily_views": 500.2,  # Desviación estándar de visualizaciones diarias
+        "total_days": 7,  # Total de días en el período
+        "threshold_std": 2.0  # Umbral de desviaciones estándar usado
     },
     "peaks": [
         {
-            "date": "2025-01-05",
-            "views": 10000,
-            "z_score": 5.71,
-            "unique_channels": 25,
-            "unique_users": 2000
+            "date": "2025-01-05",  # Fecha del pico
+            "views": 10000,  # Número de visualizaciones ese día
+            "z_score": 5.71,  # Z-score (desviaciones estándar sobre la media)
+            "unique_channels": 25,  # Canales únicos ese día
+            "unique_users": 2000,  # Usuarios únicos ese día
+            "is_peak": True,  # Flag indicando que es un pico
+            "is_valley": False  # Flag indicando que no es un valle
         }
     ],
-    "valleys": [...],
-    "daily_data": [...]
+    "valleys": [
+        {
+            "date": "2025-01-02",
+            "views": 3000,
+            "z_score": -2.5,
+            "unique_channels": 15,
+            "unique_users": 800,
+            "is_peak": False,
+            "is_valley": True
+        }
+    ],
+    "daily_data": [
+        # Todos los días del período con sus estadísticas
+        {
+            "date": "2025-01-01",
+            "views": 7000,
+            "unique_channels": 20,
+            "unique_users": 1500,
+            "z_score": 0.5,
+            "is_peak": False,
+            "is_valley": False
+        },
+        ...
+    ]
 }
 ```
+
+**Notas importantes:**
+- ⚠️ **Requiere Pandas**: Esta función requiere `pandas` y `numpy` instalados
+- Los picos se identifican cuando `z_score > threshold_std`
+- Los valles se identifican cuando `z_score < -threshold_std`
+- `daily_data` contiene todos los días del período, no solo picos/valles
 
 ---
 
@@ -257,23 +333,39 @@ Análisis de tendencia dentro del período usando regresión lineal.
 **Retorna:**
 ```python
 {
-    "period": {...},
+    "period": {
+        "start_date": "2025-01-01",
+        "end_date": "2025-01-07",
+        "days": 7  # Total de días con datos
+    },
     "trend": {
-        "direction": "creciente",
-        "strength": "fuerte",
-        "slope": 150.5,
-        "r_squared": 0.85,
-        "interpretation": "Tendencia creciente fuerte"
+        "direction": "creciente",  # "creciente", "decreciente", o "estable"
+        "strength": "fuerte",  # "fuerte", "moderada", "débil", o "estable"
+        "slope": 150.5,  # Pendiente de la línea de tendencia (cambio por día)
+        "r_squared": 0.85,  # Coeficiente de determinación (0-1, más alto = mejor ajuste)
+        "interpretation": "Tendencia creciente fuerte"  # Interpretación textual
     },
     "change": {
-        "first_day_views": 5000,
-        "last_day_views": 8000,
-        "absolute_change": 3000,
-        "percentage_change": 60.0
+        "first_day_views": 5000,  # Visualizaciones del primer día
+        "last_day_views": 8000,  # Visualizaciones del último día
+        "absolute_change": 3000,  # Cambio absoluto (último - primero)
+        "percentage_change": 60.0  # Cambio porcentual
     },
-    "daily_data": [...]
+    "daily_data": [
+        {
+            "dataDate": "2025-01-01",
+            "views": 5000
+        },
+        ...
+    ]
 }
 ```
+
+**Notas importantes:**
+- ⚠️ **Requiere Pandas**: Esta función requiere `pandas` y `numpy` instalados
+- La tendencia se calcula usando regresión lineal sobre los datos diarios
+- `strength` se determina comparando la pendiente con la desviación estándar de los datos
+- `r_squared` indica qué tan bien se ajusta la línea de tendencia a los datos (1.0 = ajuste perfecto)
 
 ---
 
@@ -382,11 +474,17 @@ for peak in events['peaks']:
 
 ## ⚠️ Notas Importantes
 
-1. **Rango de fechas obligatorio**: Todas las funciones requieren `start_date` y `end_date`
-2. **Validación automática**: Se valida que `start_date < end_date`
-3. **Pandas requerido**: Algunas funciones requieren Pandas/NumPy (se indica en la documentación)
-4. **Rendimiento**: Para rangos muy amplios (>365 días), se muestra advertencia
-5. **Comparación automática**: `get_period_comparison` calcula automáticamente el período anterior equivalente
+1. **Rango de fechas obligatorio**: Todas las funciones requieren `start_date` y `end_date` como parámetros obligatorios
+2. **Validación automática**: Se valida que `start_date < end_date`. Si no, se lanza `ValueError`
+3. **Pandas requerido**: Las funciones `get_period_events_analysis` y `get_period_trend_analysis` requieren Pandas/NumPy. Si no están instalados, se lanza `ImportError`
+4. **Rendimiento**: Para rangos muy amplios (>365 días), se muestra advertencia en los logs
+5. **Comparación automática**: `get_period_comparison` calcula automáticamente el período anterior equivalente (misma duración)
+6. **Base de datos local**: Todos los análisis trabajan con datos de la base de datos local (`MergedTelemetricOTTDelancer`), NO consultan directamente a PanAccess
+7. **Compatibilidad de BD**: 
+   - MySQL/MariaDB: Usa Django ORM (más eficiente)
+   - SQLite: Usa Raw SQL como fallback (para desarrollo)
+   - Las funciones de ventana requieren MySQL 8.0+ / MariaDB 10.2+
+8. **Manejo de errores**: `get_complete_period_analysis` maneja errores en análisis opcionales (comparación, tendencia, eventos) y continúa con los demás análisis
 
 ---
 

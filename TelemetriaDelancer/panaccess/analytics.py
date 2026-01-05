@@ -3,12 +3,16 @@ Módulo de análisis para telemetría OTT.
 
 Este módulo proporciona funciones de análisis optimizadas que aprovechan:
 - Django ORM para consultas eficientes (usa índices de BD)
-- PostgreSQL para análisis complejos (cuando se migre)
-- Pandas y NumPy para análisis estadísticos avanzados
+- MySQL/MariaDB para análisis complejos (Raw SQL cuando es necesario)
+- Pandas y NumPy para análisis estadísticos avanzados (opcional)
+
+IMPORTANTE: Los análisis trabajan con datos de la base de datos local (MergedTelemetricOTTDelancer),
+NO consultan directamente a PanAccess. Los datos se obtienen de PanAccess mediante
+telemetry_fetcher.py y se almacenan localmente para análisis.
 
 Estrategia:
-1. Análisis simples → Django ORM (rápido, eficiente)
-2. Análisis complejos → Raw SQL optimizado para PostgreSQL
+1. Análisis simples → Django ORM (rápido, eficiente, aprovecha índices)
+2. Análisis complejos → Raw SQL optimizado para MySQL/MariaDB (CTEs, funciones de ventana)
 3. Análisis estadísticos avanzados → Pandas + NumPy (correlaciones, forecasting, etc.)
 """
 
@@ -35,7 +39,7 @@ from django.db.models import (
 from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, Extract
 from django.db import connection
 
-from TelemetriaDelancer.models import MergedTelemetricOTT
+from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +68,7 @@ def get_top_channels(limit: int = 10, start_date: Optional[datetime] = None,
     
     Usa Django ORM con agregaciones optimizadas que aprovechan índices.
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataName__isnull=False
     )
     
@@ -104,7 +108,7 @@ def get_channel_audience(start_date: Optional[datetime] = None,
     Incluye total de horas vistas por canal.
     Usa Django ORM con agregaciones que aprovechan índices compuestos.
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataName__isnull=False
     )
     
@@ -142,7 +146,7 @@ def get_peak_hours_by_channel(channel: Optional[str] = None,
     
     Usa Django ORM con truncamiento de hora para agrupación eficiente.
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataName__isnull=False,
         timeDate__isnull=False
     )
@@ -169,7 +173,7 @@ def get_average_duration_by_channel(start_date: Optional[datetime] = None,
     
     Usa Django ORM con agregaciones que aprovechan índices.
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataName__isnull=False,
         dataDuration__isnull=False
     )
@@ -199,9 +203,9 @@ def get_temporal_analysis(period: str = 'daily',
     Análisis temporal (diario, semanal, mensual).
     
     Usa Django ORM con funciones de truncamiento de fecha optimizadas.
-    Compatible con SQLite y PostgreSQL.
+    Compatible con MySQL/MariaDB (usando Django ORM) y SQLite (usando Raw SQL como fallback).
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__isnull=False
     )
     
@@ -257,7 +261,7 @@ def get_temporal_analysis(period: str = 'daily',
         
         return results
     
-    # Para PostgreSQL, usar Django ORM
+    # Para MySQL/MariaDB y PostgreSQL, usar Django ORM (más eficiente)
     if period == 'daily':
         queryset = queryset.annotate(period=TruncDate('dataDate'))
     elif period == 'weekly':
@@ -275,7 +279,7 @@ def get_temporal_analysis(period: str = 'daily',
 
 
 # ============================================================================
-# ANÁLISIS AVANZADOS (Raw SQL optimizado para PostgreSQL)
+# ANÁLISIS AVANZADOS (Raw SQL optimizado para MySQL 8.0+/MariaDB 10.2+)
 # ============================================================================
 
 def get_day_over_day_comparison(start_date: Optional[datetime] = None,
@@ -283,7 +287,9 @@ def get_day_over_day_comparison(start_date: Optional[datetime] = None,
     """
     Comparación día a día con funciones de ventana.
     
-    Usa Raw SQL optimizado para PostgreSQL (funciona en SQLite para desarrollo).
+    Usa Raw SQL con CTEs y funciones de ventana (LAG).
+    Requiere MySQL 8.0+ o MariaDB 10.2+ para funciones de ventana.
+    Compatible con SQLite para desarrollo (con limitaciones).
     """
     query = """
     WITH daily_stats AS (
@@ -315,9 +321,17 @@ def get_day_over_day_comparison(start_date: Optional[datetime] = None,
     """
     
     with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        columns = [col[0] for col in cursor.description]
-        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        # Django maneja automáticamente los parámetros según el vendor (%s para MySQL/PostgreSQL, ? para SQLite)
+        # Para MySQL 8.0+ y MariaDB 10.2+, las funciones de ventana (LAG) están disponibles
+        # Para versiones anteriores, esta consulta fallará - usar Django ORM como alternativa
+        try:
+            cursor.execute(query, params)
+            columns = [col[0] for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error ejecutando consulta con funciones de ventana: {str(e)}")
+            logger.warning("Las funciones de ventana requieren MySQL 8.0+ o MariaDB 10.2+")
+            raise
     
     return results
 
@@ -328,7 +342,8 @@ def get_anomaly_detection(threshold_std: float = 3.0,
     """
     Detección de anomalías usando desviación estándar.
     
-    Usa Raw SQL optimizado para PostgreSQL.
+    Usa Raw SQL con CTEs para calcular estadísticas.
+    Compatible con MySQL/MariaDB (usa STDDEV_POP o STDDEV según vendor).
     """
     query = """
     WITH daily_counts AS (
@@ -371,9 +386,14 @@ def get_anomaly_detection(threshold_std: float = 3.0,
     params.append(threshold_std)
     
     with connection.cursor() as cursor:
-        # Para SQLite, usar STDDEV en lugar de STDDEV_POP
+        # Ajustar función de desviación estándar según el vendor de BD
         if connection.vendor == 'sqlite':
+            # SQLite usa STDDEV
             query = query.replace('STDDEV_POP', 'STDDEV')
+        elif connection.vendor == 'mysql':
+            # MySQL 8.0+ soporta STDDEV_POP, pero para compatibilidad usar STDDEV_SAMP
+            # STDDEV_SAMP es equivalente a STDDEV_POP para muestras grandes
+            query = query.replace('STDDEV_POP', 'STDDEV_SAMP')
         
         cursor.execute(query, params)
         columns = [col[0] for col in cursor.description]
@@ -406,7 +426,7 @@ def get_time_slot_analysis(start_date: Optional[datetime] = None,
     Returns:
         Dict con consumo por franja horaria
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         timeDate__isnull=False,
         dataDuration__isnull=False
     )
@@ -489,7 +509,7 @@ def get_general_summary(start_date: Optional[datetime] = None,
     Returns:
         Dict con resumen general
     """
-    queryset = MergedTelemetricOTT.objects.all()
+    queryset = MergedTelemetricOTTDelancer.objects.all()
     
     if start_date:
         queryset = queryset.filter(dataDate__gte=start_date.date())
@@ -531,7 +551,7 @@ def get_geographic_analysis(start_date: Optional[datetime] = None,
     
     Usa Django ORM con agregaciones optimizadas.
     """
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         whoisCountry__isnull=False
     )
     
@@ -576,7 +596,7 @@ def get_cohort_analysis_pandas(start_date: Optional[datetime] = None,
     _check_pandas()
     
     # Cargar solo los datos necesarios (no toda la tabla)
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode__isnull=False,
         timestamp__isnull=False
     )
@@ -637,7 +657,7 @@ def get_correlation_analysis(start_date: Optional[datetime] = None,
     """
     _check_pandas()
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode__isnull=False,
         dataDuration__isnull=False,
         dataName__isnull=False
@@ -768,7 +788,7 @@ def get_time_series_analysis(channel: Optional[str] = None,
     """
     _check_pandas()
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__isnull=False
     )
     
@@ -853,7 +873,7 @@ def get_user_segmentation_analysis(start_date: Optional[datetime] = None,
     """
     _check_pandas()
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode__isnull=False
     )
     
@@ -943,7 +963,7 @@ def get_channel_performance_matrix(start_date: Optional[datetime] = None,
     """
     _check_pandas()
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataName__isnull=False
     )
     

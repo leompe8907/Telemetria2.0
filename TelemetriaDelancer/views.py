@@ -12,6 +12,9 @@ from TelemetriaDelancer.panaccess.telemetry_fetcher import (
 )
 from TelemetriaDelancer.panaccess.ott_merger import merge_ott_records
 from TelemetriaDelancer.exceptions import PanAccessException
+from TelemetriaDelancer.mixins import CacheMixin
+from django.conf import settings
+from django.core.cache import cache
 from datetime import datetime, timedelta, date
 import json
 import math
@@ -262,14 +265,16 @@ class TelemetrySyncView(APIView):
             )
 
 
-class MergeOTTView(APIView):
+class MergeOTTView(CacheMixin, APIView):
     """
-    Endpoint para fusionar registros OTT (actionId 7 y 8) en MergedTelemetricOTT.
+    Endpoint para fusionar registros OTT (actionId 7 y 8) en MergedTelemetricOTTDelancer.
     
     Fusiona el dataName de actionId=7 a actionId=8 cuando comparten el mismo dataId.
     Solo procesa registros nuevos desde el último recordId guardado.
     """
     permission_classes = [AllowAny]
+    cache_timeout = settings.CACHE_TIMEOUT_SHORT  # Cache corto para estado
+    cache_key_prefix = 'merge_ott_status'
     
     def post(self, request):
         """
@@ -321,20 +326,20 @@ class MergeOTTView(APIView):
         """
         GET: Obtiene información sobre el estado del merge OTT.
         """
-        try:
-            from TelemetriaDelancer.models import MergedTelemetricOTT
+        def _get_data(request):
+            from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
             from django.db.models import Max, Count
             
             # Obtener estadísticas
-            max_record = MergedTelemetricOTT.objects.aggregate(Max('recordId'))['recordId__max']
-            total_records = MergedTelemetricOTT.objects.count()
+            max_record = MergedTelemetricOTTDelancer.objects.aggregate(Max('recordId'))['recordId__max']
+            total_records = MergedTelemetricOTTDelancer.objects.count()
             
             # Distribución por actionId
-            action_dist = MergedTelemetricOTT.objects.values('actionId').annotate(
+            action_dist = MergedTelemetricOTTDelancer.objects.values('actionId').annotate(
                 count=Count('actionId')
             ).order_by('actionId')
             
-            return Response({
+            return {
                 "message": "Estado del merge OTT",
                 "merged_table_status": {
                     "total_records": total_records,
@@ -348,8 +353,10 @@ class MergeOTTView(APIView):
                         "batch_size": "Opcional - Tamaño del lote (default: 500)"
                     }
                 }
-            }, status=status.HTTP_200_OK)
-            
+            }
+        
+        try:
+            return self.get_cached_response(request, _get_data)
         except Exception as e:
             logger.error(f"Error en GET merge OTT: {str(e)}", exc_info=True)
             return Response(
@@ -358,7 +365,7 @@ class MergeOTTView(APIView):
             )
 
 
-class AnalyticsView(APIView):
+class AnalyticsView(CacheMixin, APIView):
     """
     Endpoint para análisis generales de telemetría OTT.
     
@@ -366,35 +373,51 @@ class AnalyticsView(APIView):
     Ideal para dashboards que necesitan toda la información de una vez.
     """
     permission_classes = [AllowAny]
+    cache_timeout = settings.CACHE_TIMEOUT_ANALYTICS  # 30 minutos para análisis
+    cache_key_prefix = 'analytics'
     
-    def post(self, request):
+    def get(self, request):
         """
-        POST: Ejecuta TODOS los análisis generales.
+        GET: Ejecuta TODOS los análisis generales.
         
-        Parámetros opcionales:
+        Query parameters opcionales:
         - start_date: Fecha de inicio (formato: YYYY-MM-DD)
         - end_date: Fecha de fin (formato: YYYY-MM-DD)
         - limit: Límite de resultados para top_channels (default: 20)
         - period: 'daily', 'weekly', 'monthly' (para temporal, default: 'daily')
         - forecast_days: Días a pronosticar (para time_series, default: 7)
         - n_segments: Número de segmentos (para segmentation, default: 4)
-        - include_pandas_analyses: Incluir análisis que requieren Pandas (default: True)
+        - include_pandas_analyses: Incluir análisis que requieren Pandas (default: true, valores: 'true', '1', 'yes')
+        - no_cache: Deshabilitar cache (ej: ?no_cache=1)
+        
+        Ejemplo:
+        GET /delancer/telemetry/analytics/?start_date=2025-01-01&end_date=2025-01-31&limit=20&include_pandas_analyses=true
         """
+        # Verificar cache si está habilitado
+        use_cache = request.query_params.get('no_cache', '0') != '1'
+        if use_cache:
+            cache_key = self.get_cache_key(request)
+            cached_response = cache.get(cache_key)
+            if cached_response is not None:
+                logger.debug(f"Cache HIT para analytics: {cache_key}")
+                return Response(cached_response['data'], status=cached_response.get('status', 200))
+            logger.debug(f"Cache MISS para analytics: {cache_key}")
+        
         try:
-            # Parsear fechas opcionales
+            # Parsear fechas opcionales desde query params
             start_date = None
             end_date = None
-            if request.data.get('start_date'):
-                start_date = datetime.fromisoformat(request.data.get('start_date'))
-            if request.data.get('end_date'):
-                end_date = datetime.fromisoformat(request.data.get('end_date'))
+            if request.query_params.get('start_date'):
+                start_date = datetime.fromisoformat(request.query_params.get('start_date'))
+            if request.query_params.get('end_date'):
+                end_date = datetime.fromisoformat(request.query_params.get('end_date'))
             
-            # Parámetros opcionales
-            limit = int(request.data.get('limit', 20))
-            period = request.data.get('period', 'daily')
-            forecast_days = int(request.data.get('forecast_days', 7))
-            n_segments = int(request.data.get('n_segments', 4))
-            include_pandas = request.data.get('include_pandas_analyses', True)
+            # Parámetros opcionales desde query params
+            limit = int(request.query_params.get('limit', 20))
+            period = request.query_params.get('period', 'daily')
+            forecast_days = int(request.query_params.get('forecast_days', 7))
+            n_segments = int(request.query_params.get('n_segments', 4))
+            include_pandas = request.query_params.get('include_pandas_analyses', 'true')
             if isinstance(include_pandas, str):
                 include_pandas = include_pandas.lower() in ('true', '1', 'yes')
             
@@ -594,7 +617,21 @@ class AnalyticsView(APIView):
                 # Serializar resultados para JSON
                 serialized_results = _serialize_for_json(results)
                 logger.info("Serialización completada exitosamente")
-                return Response(serialized_results, status=status.HTTP_200_OK)
+                response = Response(serialized_results, status=status.HTTP_200_OK)
+                
+                # Guardar en cache si está habilitado
+                if use_cache:
+                    try:
+                        cache_key = self.get_cache_key(request)
+                        cache.set(cache_key, {
+                            'data': serialized_results,
+                            'status': status.HTTP_200_OK
+                        }, timeout=self.cache_timeout)
+                        logger.debug(f"Resultados de analytics cacheados: {cache_key}")
+                    except Exception as e:
+                        logger.warning(f"Error al guardar en cache: {str(e)}")
+                
+                return response
             except Exception as e:
                 logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
                 # Si falla la serialización, intentar con DRF directamente
@@ -625,25 +662,28 @@ class AnalyticsView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
-    def get(self, request):
+    def post(self, request):
         """
-        GET: Información sobre el endpoint de análisis generales.
+        POST: Información sobre el endpoint de análisis generales.
+        (Este método solo retorna documentación, el endpoint real usa GET)
         """
         return Response({
             "message": "Análisis generales de telemetría OTT - Retorna TODOS los análisis en una sola respuesta",
             "usage": {
-                "method": "POST",
+                "method": "GET",
                 "endpoint": "/delancer/telemetry/analytics/",
                 "description": "Ejecuta TODOS los análisis generales y los retorna en un solo objeto JSON",
-                "optional_parameters": {
+                "optional_query_parameters": {
                     "start_date": "Fecha de inicio (YYYY-MM-DD) - Filtra análisis por fecha",
                     "end_date": "Fecha de fin (YYYY-MM-DD) - Filtra análisis por fecha",
                     "limit": "Límite de resultados para top_channels (default: 20)",
                     "period": "Período para temporal: 'daily', 'weekly', 'monthly' (default: 'daily')",
                     "forecast_days": "Días a pronosticar para time_series (default: 7)",
                     "n_segments": "Número de segmentos para segmentation (default: 4)",
-                    "include_pandas_analyses": "Incluir análisis que requieren Pandas (default: true)"
-                }
+                    "include_pandas_analyses": "Incluir análisis que requieren Pandas (default: true, valores: 'true', '1', 'yes')",
+                    "no_cache": "Deshabilitar cache (ej: ?no_cache=1)"
+                },
+                "example": "GET /delancer/telemetry/analytics/?start_date=2025-01-01&end_date=2025-01-31&limit=20&include_pandas_analyses=true"
             },
             "analyses_included": {
                 "top_channels": "Top canales más vistos",
@@ -683,7 +723,7 @@ class AnalyticsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class PeriodAnalysisView(APIView):
+class PeriodAnalysisView(CacheMixin, APIView):
     """
     Endpoint para análisis segmentados por rango de fechas.
     
@@ -691,6 +731,8 @@ class PeriodAnalysisView(APIView):
     Ideal para dashboards que necesitan toda la información del período de una vez.
     """
     permission_classes = [AllowAny]
+    cache_timeout = settings.CACHE_TIMEOUT_ANALYTICS  # 30 minutos para análisis
+    cache_key_prefix = 'period_analysis'
     
     def post(self, request):
         """
@@ -707,7 +749,18 @@ class PeriodAnalysisView(APIView):
         - threshold_std: Desviaciones estándar para eventos (default: 2.0)
         - include_comparison: Incluir comparación con período anterior (default: True)
         - include_pandas_analyses: Incluir análisis que requieren Pandas (default: True)
+        - no_cache: Deshabilitar cache (query param, ej: ?no_cache=1)
         """
+        # Verificar cache si está habilitado
+        use_cache = request.query_params.get('no_cache', '0') != '1'
+        if use_cache:
+            cache_key = self.get_cache_key(request)
+            cached_response = cache.get(cache_key)
+            if cached_response is not None:
+                logger.debug(f"Cache HIT para period_analysis: {cache_key}")
+                return Response(cached_response['data'], status=cached_response.get('status', 200))
+            logger.debug(f"Cache MISS para period_analysis: {cache_key}")
+        
         try:
             # Validar fechas requeridas
             start_date_str = request.data.get('start_date')
@@ -880,7 +933,21 @@ class PeriodAnalysisView(APIView):
                 # Serializar resultados para JSON
                 serialized_results = _serialize_for_json(results)
                 logger.info("Serialización completada exitosamente")
-                return Response(serialized_results, status=status.HTTP_200_OK)
+                response = Response(serialized_results, status=status.HTTP_200_OK)
+                
+                # Guardar en cache si está habilitado
+                if use_cache:
+                    try:
+                        cache_key = self.get_cache_key(request)
+                        cache.set(cache_key, {
+                            'data': serialized_results,
+                            'status': status.HTTP_200_OK
+                        }, timeout=self.cache_timeout)
+                        logger.debug(f"Resultados de period_analysis cacheados: {cache_key}")
+                    except Exception as e:
+                        logger.warning(f"Error al guardar en cache: {str(e)}")
+                
+                return response
             except Exception as e:
                 logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
                 # Si falla la serialización, intentar con DRF directamente
@@ -1012,24 +1079,27 @@ class GeneralUsersAnalysisView(APIView):
     """
     permission_classes = [AllowAny]
     
-    def post(self, request):
+    def get(self, request):
         """
-        POST: Ejecuta análisis general de usuarios.
+        GET: Ejecuta análisis general de usuarios.
         
-        Parámetros opcionales:
+        Query parameters opcionales:
         - start_date: Fecha de inicio (formato: YYYY-MM-DD)
         - end_date: Fecha de fin (formato: YYYY-MM-DD)
         - n_segments: Número de segmentos para clasificar usuarios (default: 5)
+        
+        Ejemplo:
+        GET /delancer/telemetry/users/analysis/general/?start_date=2025-01-01&end_date=2025-01-31&n_segments=5
         """
         try:
             from TelemetriaDelancer.panaccess.analytics_users_general import get_general_users_analysis
             
-            # Parsear fechas opcionales
+            # Parsear fechas opcionales desde query params
             start_date = None
             end_date = None
             
-            start_date_str = request.data.get('start_date')
-            end_date_str = request.data.get('end_date')
+            start_date_str = request.query_params.get('start_date')
+            end_date_str = request.query_params.get('end_date')
             
             if start_date_str:
                 try:
@@ -1049,7 +1119,7 @@ class GeneralUsersAnalysisView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
-            n_segments = int(request.data.get('n_segments', 5))
+            n_segments = int(request.query_params.get('n_segments', 5))
             
             logger.info(f"Ejecutando análisis general de usuarios - start_date={start_date}, end_date={end_date}")
             
@@ -1078,21 +1148,6 @@ class GeneralUsersAnalysisView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    
-    def get(self, request):
-        """GET: Información sobre el endpoint."""
-        return Response({
-            "message": "Análisis general de usuarios/subscribers",
-            "usage": {
-                "method": "POST",
-                "endpoint": "/delancer/telemetry/users/analysis/general/",
-                "optional_parameters": {
-                    "start_date": "Fecha de inicio (YYYY-MM-DD)",
-                    "end_date": "Fecha de fin (YYYY-MM-DD)",
-                    "n_segments": "Número de segmentos para clasificación (default: 5)"
-                }
-            }
-        }, status=status.HTTP_200_OK)
 
 
 class UserAnalysisView(APIView):
@@ -1107,34 +1162,37 @@ class UserAnalysisView(APIView):
     """
     permission_classes = [AllowAny]
     
-    def post(self, request):
+    def get(self, request):
         """
-        POST: Ejecuta análisis de un usuario específico.
+        GET: Ejecuta análisis de un usuario específico.
         
-        Parámetros requeridos:
+        Query parameters requeridos:
         - subscriber_code: Código del subscriber a analizar
         
-        Parámetros opcionales:
+        Query parameters opcionales:
         - start_date: Fecha de inicio (formato: YYYY-MM-DD) - para filtrar
         - end_date: Fecha de fin (formato: YYYY-MM-DD) - para filtrar
+        
+        Ejemplo:
+        GET /delancer/telemetry/users/analysis/?subscriber_code=USER001&start_date=2025-01-01&end_date=2025-01-31
         """
         try:
             from TelemetriaDelancer.panaccess.analytics_user_specific import get_user_analysis
             
-            subscriber_code = request.data.get('subscriber_code')
+            subscriber_code = request.query_params.get('subscriber_code')
             
             if not subscriber_code:
                 return Response(
-                    {"error": "subscriber_code es requerido"},
+                    {"error": "subscriber_code es requerido como query parameter"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Parsear fechas opcionales
+            # Parsear fechas opcionales desde query params
             start_date = None
             end_date = None
             
-            start_date_str = request.data.get('start_date')
-            end_date_str = request.data.get('end_date')
+            start_date_str = request.query_params.get('start_date')
+            end_date_str = request.query_params.get('end_date')
             
             if start_date_str:
                 try:
@@ -1181,23 +1239,6 @@ class UserAnalysisView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    
-    def get(self, request):
-        """GET: Información sobre el endpoint."""
-        return Response({
-            "message": "Análisis detallado de un usuario/subscriber específico",
-            "usage": {
-                "method": "POST",
-                "endpoint": "/delancer/telemetry/users/analysis/",
-                "required_parameters": {
-                    "subscriber_code": "Código del subscriber a analizar"
-                },
-                "optional_parameters": {
-                    "start_date": "Fecha de inicio (YYYY-MM-DD) - para filtrar",
-                    "end_date": "Fecha de fin (YYYY-MM-DD) - para filtrar"
-                }
-            }
-        }, status=status.HTTP_200_OK)
 
 
 class UserDateRangeAnalysisView(APIView):

@@ -1,28 +1,84 @@
-[2025-12-31 10:41:21] ERROR [django.request] Internal Server Error: /delancer/telemetry/analytics/
+[2026-01-05 14:21:15] ERROR [django.request] Internal Server Error: /delancer/telemetry/analytics/
 Traceback (most recent call last):
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
     response = get_response(request)
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
-    response = response.render()
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\response.py", line 114, in render
-    self.content = self.rendered_content
-                   ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\response.py", line 74, in rendered_content
-    ret = renderer.render(self.data, accepted_media_type, context)
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\renderers.py", line 100, in render
-    ret = json.dumps(
-        data, cls=self.encoder_class,
-        indent=indent, ensure_ascii=self.ensure_ascii,
-        allow_nan=not self.strict, separators=separators
-    )
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\site-packages\rest_framework\utils\json.py", line 25, in dumps
-    return json.dumps(*args, **kwargs)
-           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\json\__init__.py", line 238, in dumps
-    **kw).encode(obj)
-          ~~~~~~^^^^^
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 200, in encode
-    chunks = self.iterencode(o, _one_shot=True)
-  File "C:\Users\veyqp\AppData\Local\Programs\Python\Python313\Lib\json\encoder.py", line 261, in iterencode
-    return _iterencode(o, 0)
-ValueError: Out of range float values are not JSON compliant: nan
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py", line 698, in get
+    "include_pandas_analyses": true
+                               ^^^^
+NameError: name 'true' is not defined. Did you mean: 'True'?
+[2026-01-05 14:48:27] ERROR [django.request] Internal Server Error: /delancer/telemetry/analytics/
+Traceback (most recent call last):
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py", line 698, in get
+    "include_pandas_analyses": true
+                               ^^^^
+NameError: name 'true' is not defined. Did you mean: 'True'?
+[2026-01-05 15:27:50] ERROR [django.request] Internal Server Error: /delancer/telemetry/analytics/
+Traceback (most recent call last):
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\core\handlers\base.py", line 198, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\django\views\generic\base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\Leonard\Desktop\Telemetria\back\env\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py", line 698, in get
+    "include_pandas_analyses": true
+                               ^^^^
+NameError: name 'true' is not defined. Did you mean: 'True'?

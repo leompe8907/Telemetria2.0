@@ -8,6 +8,10 @@ Proporciona análisis detallado de un usuario en un período específico:
 - Patrones horarios en el período
 - Comparación con promedio general
 - Eventos y anomalías (días con consumo anormal)
+
+IMPORTANTE: Los análisis trabajan con datos de la base de datos local (MergedTelemetricOTTDelancer),
+NO consultan directamente a PanAccess. Los datos se obtienen de PanAccess mediante
+telemetry_fetcher.py y se almacenan localmente para análisis.
 """
 
 import logging
@@ -28,7 +32,7 @@ from django.db.models import (
     Count, Sum, Avg, Case, When, Value, CharField
 )
 
-from TelemetriaDelancer.models import MergedTelemetricOTT
+from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +64,7 @@ def get_user_date_range_analysis(subscriber_code: str,
             "error": "start_date debe ser anterior a end_date"
         }
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode=subscriber_code,
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date()
@@ -174,7 +178,7 @@ def get_user_date_range_analysis(subscriber_code: str,
         }
     
     # Comparación con promedio general (en el mismo período)
-    general_avg = MergedTelemetricOTT.objects.filter(
+    general_avg = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date()
     ).aggregate(

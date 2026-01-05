@@ -2,27 +2,27 @@
 Módulo para fusionar registros de telemetría OTT (actionId 7 y 8).
 
 Este módulo fusiona el dataName de actionId=7 a actionId=8 cuando comparten
-el mismo dataId, y guarda los registros en la tabla MergedTelemetricOTT.
+el mismo dataId, y guarda los registros en la tabla MergedTelemetricOTTDelancer.
 """
 import logging
 from typing import List, Optional
 from django.db import transaction
 from django.db.models import Max
 
-from TelemetriaDelancer.models import TelemetryRecordEntry, MergedTelemetricOTT
+from TelemetriaDelancer.models import TelemetryRecordEntryDelancer, MergedTelemetricOTTDelancer
 
 logger = logging.getLogger(__name__)
 
 
 def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500) -> dict:
     """
-    Fusiona registros OTT (actionId 7 y 8) y los guarda en MergedTelemetricOTT.
+    Fusiona registros OTT (actionId 7 y 8) y los guarda en MergedTelemetricOTTDelancer.
     
     Lógica:
     1. Obtiene el mapeo dataId -> dataName de actionId=7
     2. Obtiene registros actionId=8 nuevos (recordId > max_record_id)
     3. Fusiona el dataName de actionId=7 a actionId=8 cuando comparten dataId
-    4. Guarda los registros fusionados en MergedTelemetricOTT
+    4. Guarda los registros fusionados en MergedTelemetricOTTDelancer
     
     Args:
         max_record_id: RecordId máximo ya procesado (None = procesar todos)
@@ -40,7 +40,7 @@ def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500
     """
     # Si no se proporciona max_record_id, obtener el máximo de la tabla destino
     if max_record_id is None:
-        max_record_result = MergedTelemetricOTT.objects.aggregate(max_record=Max('recordId'))
+        max_record_result = MergedTelemetricOTTDelancer.objects.aggregate(max_record=Max('recordId'))
         max_record_id = max_record_result['max_record'] or 0
         logger.info(f"Obtenido max_record_id de BD: {max_record_id}")
     
@@ -48,7 +48,7 @@ def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500
     
     # 1. Obtener mapeo dataId -> dataName de actionId=7 (solo los que tienen dataName válido)
     logger.info("Obteniendo mapeo dataId->dataName de actionId=7...")
-    action7_mapping = TelemetryRecordEntry.objects.filter(
+    action7_mapping = TelemetryRecordEntryDelancer.objects.filter(
         actionId=7,
         dataId__isnull=False,
         dataName__isnull=False
@@ -59,7 +59,7 @@ def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500
     
     # 2. Obtener registros actionId=8 nuevos que necesitan merge
     logger.info(f"Obteniendo registros actionId=8 con recordId > {max_record_id}...")
-    action8_records = TelemetryRecordEntry.objects.filter(
+    action8_records = TelemetryRecordEntryDelancer.objects.filter(
         actionId=8,
         recordId__gt=max_record_id,
         dataId__isnull=False
@@ -77,7 +77,7 @@ def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500
             "errors": 0
         }
     
-    # 3. Crear objetos MergedTelemetricOTT con dataName fusionado
+            # 3. Crear objetos MergedTelemetricOTTDelancer con dataName fusionado
     merged_objects = []
     merged_count = 0
     skipped_count = 0
@@ -95,8 +95,8 @@ def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500
                 merged_dataName = record.dataName
                 skipped_count += 1
             
-            # Crear objeto MergedTelemetricOTT con todos los campos
-            merged_obj = MergedTelemetricOTT(
+            # Crear objeto MergedTelemetricOTTDelancer con todos los campos
+            merged_obj = MergedTelemetricOTTDelancer(
                 actionId=record.actionId,
                 actionKey=record.actionKey,
                 anonymized=record.anonymized,
@@ -160,12 +160,12 @@ def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500
     return result
 
 
-def _bulk_save_merged(merged_objects: List[MergedTelemetricOTT], batch_size: int) -> int:
+def _bulk_save_merged(merged_objects: List[MergedTelemetricOTTDelancer], batch_size: int) -> int:
     """
-    Guarda objetos MergedTelemetricOTT usando bulk_create.
+    Guarda objetos MergedTelemetricOTTDelancer usando bulk_create.
     
     Args:
-        merged_objects: Lista de objetos MergedTelemetricOTT
+        merged_objects: Lista de objetos MergedTelemetricOTTDelancer
         batch_size: Tamaño del lote
     
     Returns:
@@ -173,7 +173,7 @@ def _bulk_save_merged(merged_objects: List[MergedTelemetricOTT], batch_size: int
     """
     try:
         with transaction.atomic():
-            MergedTelemetricOTT.objects.bulk_create(
+            MergedTelemetricOTTDelancer.objects.bulk_create(
                 merged_objects,
                 ignore_conflicts=True,
                 batch_size=batch_size

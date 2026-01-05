@@ -38,7 +38,7 @@ class TelemetryBase(models.Model):
         return f"Record {self.recordId or 'N/A'} - Action {self.actionId or 'N/A'}"
 
 
-class TelemetryRecordEntry(TelemetryBase):
+class TelemetryRecordEntryDelancer(TelemetryBase):
     """Tabla principal - almacena TODOS los registros"""
     
     class Meta:
@@ -55,7 +55,7 @@ class TelemetryRecordEntry(TelemetryBase):
         ]
 
 
-class MergedTelemetricOTT(TelemetryBase):
+class MergedTelemetricOTTDelancer(TelemetryBase):
     """Tabla especializada para OTT Streams (actionId 7, 8)"""
     
     class Meta:
@@ -72,7 +72,7 @@ class MergedTelemetricOTT(TelemetryBase):
         ]
 
 
-class MergedTelemetricDVB(TelemetryBase):
+class MergedTelemetricDVBDelancer(TelemetryBase):
     """Tabla especializada para DVB Services (actionId 5, 6)"""
     
     class Meta:
@@ -89,7 +89,7 @@ class MergedTelemetricDVB(TelemetryBase):
         ]
 
 
-class MergedTelemetricStopCatchup(TelemetryBase):
+class MergedTelemetricStopCatchupDelancer(TelemetryBase):
     """Tabla especializada para Catchup detenido (actionId 17)"""
     
     class Meta:
@@ -106,7 +106,7 @@ class MergedTelemetricStopCatchup(TelemetryBase):
         ]
 
 
-class MergedTelemetricEndCatchup(TelemetryBase):
+class MergedTelemetricEndCatchupDelancer(TelemetryBase):
     """Tabla especializada para Catchup terminado (actionId 18)"""
     
     class Meta:
@@ -123,7 +123,7 @@ class MergedTelemetricEndCatchup(TelemetryBase):
         ]
 
 
-class MergedTelemetricStopVOD(TelemetryBase):
+class MergedTelemetricStopVODDelancer(TelemetryBase):
     """Tabla especializada para VOD detenido (actionId 14)"""
     
     class Meta:
@@ -140,7 +140,7 @@ class MergedTelemetricStopVOD(TelemetryBase):
         ]
 
 
-class MergedTelemetricEndVOD(TelemetryBase):
+class MergedTelemetricEndVODDelancer(TelemetryBase):
     """Tabla especializada para VOD terminado (actionId 15)"""
     
     class Meta:

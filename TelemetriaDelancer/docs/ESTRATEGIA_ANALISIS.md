@@ -18,7 +18,7 @@ No usamos una sola librería para todo. En su lugar, elegimos la mejor herramien
   - Aprovecha índices de base de datos automáticamente
   - Muy eficiente en memoria (no carga todo en RAM)
   - Integrado con Django (sin dependencias extra)
-  - Funciona perfectamente con PostgreSQL
+   - Funciona perfectamente con MySQL/MariaDB
   - Fácil de mantener y depurar
 
 - 📋 **Ejemplos de uso:**
@@ -31,9 +31,9 @@ No usamos una sola librería para todo. En su lugar, elegimos la mejor herramien
 ### 2. **Raw SQL Optimizado** (15% de los casos)
 - ✅ **Para:** Análisis complejos que requieren funciones avanzadas
 - ✅ **Ventajas:**
-  - Funciones de ventana (LAG, LEAD, ROW_NUMBER)
-  - CTEs (Common Table Expressions) complejas
-  - Optimización manual para PostgreSQL
+  - Funciones de ventana (LAG, LEAD, ROW_NUMBER) - MySQL 8.0+/MariaDB 10.2+
+  - CTEs (Common Table Expressions) complejas - MySQL 8.0+/MariaDB 10.2+
+  - Optimización manual para MySQL/MariaDB
   - Máximo rendimiento en consultas complejas
 
 - 📋 **Ejemplos de uso:**
@@ -63,7 +63,7 @@ No usamos una sola librería para todo. En su lugar, elegimos la mejor herramien
 
 ### Requeridas (Ya instaladas)
 - Django ORM (incluido en Django)
-- PostgreSQL driver (psycopg2 cuando migres)
+- MySQL/MariaDB driver (mysqlclient - ya instalado)
 
 ### Opcionales (Solo si necesitas análisis avanzados)
 ```bash
@@ -105,7 +105,7 @@ TelemetriaDelancer/panaccess/analytics.py
 
 2. **Escalabilidad**
    - No carga toda la tabla en memoria (Django ORM)
-   - PostgreSQL hace el trabajo pesado
+   - MySQL/MariaDB hace el trabajo pesado
    - Pandas solo para análisis puntuales
 
 3. **Mantenibilidad**
@@ -116,7 +116,7 @@ TelemetriaDelancer/panaccess/analytics.py
 4. **Flexibilidad**
    - Puedes agregar pandas después si lo necesitas
    - No estás atado a una sola librería
-   - Fácil migrar a PostgreSQL
+   - Compatible con MySQL/MariaDB (producción) y SQLite (desarrollo)
 
 ---
 
@@ -165,8 +165,8 @@ except ImportError:
 
 ### Con Raw SQL (Análisis Complejos)
 - **Tiempo:** 1-5 segundos para 223K registros
-- **Memoria:** Mínima (PostgreSQL hace el trabajo)
-- **Optimización:** Manual pero muy eficiente
+- **Memoria:** Mínima (MySQL/MariaDB hace el trabajo)
+- **Optimización:** Manual pero muy eficiente (requiere MySQL 8.0+ o MariaDB 10.2+ para funciones de ventana)
 
 ### Con Pandas (Análisis Avanzados)
 - **Tiempo:** 5-30 segundos (depende de la complejidad)
@@ -175,46 +175,42 @@ except ImportError:
 
 ---
 
-## 🔄 Migración a PostgreSQL
+## 🔄 Requisitos de Base de Datos
 
-### Ventajas al Migrar
+### Versiones Recomendadas
 
-1. **Mejor Rendimiento**
-   - Planner más avanzado
+**MySQL 8.0+ o MariaDB 10.2+** (Recomendado para producción)
+
+1. **Funciones Avanzadas Disponibles**
+   - CTEs (Common Table Expressions) - MySQL 8.0+ / MariaDB 10.2+
+   - Funciones de ventana (LAG, LEAD, ROW_NUMBER) - MySQL 8.0+ / MariaDB 10.2+
+   - Mejor optimización de consultas complejas
+
+2. **Rendimiento**
    - Mejor uso de índices múltiples
-   - Funciones de ventana más eficientes
-
-2. **Funciones Avanzadas**
-   - CTEs optimizadas automáticamente
-   - Particionamiento de tablas
-   - Materialized Views para análisis frecuentes
+   - Optimización automática de CTEs
+   - Mejor manejo de grandes volúmenes
 
 3. **Escalabilidad**
-   - Mejor manejo de grandes volúmenes
-   - Concurrencia mejorada
-   - Replicación y sharding
+   - Mejor concurrencia
+   - Replicación y sharding disponibles
+
+### Versiones Anteriores
+
+Si usas MySQL 5.7 o MariaDB 10.1 o anteriores:
+- Las funciones de ventana (LAG, LEAD) NO estarán disponibles
+- Algunas consultas avanzadas pueden fallar
+- Se recomienda usar principalmente Django ORM
 
 ### Cambios Necesarios
 
-Las consultas ya están optimizadas para PostgreSQL. Solo necesitarás:
+Las consultas están optimizadas para MySQL 8.0+ / MariaDB 10.2+. Para versiones anteriores:
 
-1. **Instalar driver de PostgreSQL:**
-   ```bash
-   pip install psycopg2-binary
-   ```
+1. **Usar principalmente Django ORM** (funciona en todas las versiones)
+2. **Evitar consultas con funciones de ventana** si la versión no las soporta
+3. **El driver mysqlclient ya está instalado** (ver requirements.txt)
 
-2. **Actualizar settings.py:**
-   ```python
-   DATABASES = {
-       'default': {
-           'ENGINE': 'django.db.backends.postgresql',
-           'NAME': 'tu_base_de_datos',
-           # ... resto de configuración
-       }
-   }
-   ```
-
-3. **Las consultas funcionarán mejor automáticamente** 🎉
+   La configuración ya está lista en `settings.py` usando `MariaConfig`.
 
 ---
 
@@ -225,7 +221,7 @@ Las consultas ya están optimizadas para PostgreSQL. Solo necesitarás:
 - Usar Raw SQL para análisis complejos
 - Instalar pandas solo si realmente lo necesitas
 - Aprovechar índices de base de datos
-- Usar Materialized Views en PostgreSQL para análisis frecuentes
+- Aprovechar índices compuestos en MySQL/MariaDB para análisis frecuentes
 
 ### ❌ Evitar
 - Cargar toda la tabla en memoria innecesariamente
@@ -247,7 +243,7 @@ Esta estrategia te da:
 - ✅ Mínima complejidad
 - ✅ Fácil mantenimiento
 - ✅ Escalabilidad
-- ✅ Preparado para PostgreSQL
+- ✅ Optimizado para MySQL 8.0+ / MariaDB 10.2+
 
 ---
 

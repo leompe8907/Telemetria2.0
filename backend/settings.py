@@ -11,11 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from config import DjangoConfig, CeleryConfig
+from config import DjangoConfig, CeleryConfig, MariaConfig
+import django_redis
+import os
 
 #* Validar configuraciones
 DjangoConfig.validate()
 CeleryConfig.validate()
+MariaConfig.validate()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +33,8 @@ SECRET_KEY = DjangoConfig.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = DjangoConfig.DEBUG
 
-ALLOWED_HOSTS = DjangoConfig.ALLOWED_HOSTS
+ALLOWED_HOSTS = ['http://localhost:5173/']
+#ALLOWED_HOSTS = DjangoConfig.ALLOWED_HOSTS
 
 # ============================================================================
 # INSTALLED_APPS
@@ -108,10 +112,31 @@ TEMPLATES = [
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# SQLite
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# ============================================================================
+# CONFIGURACIÓN DE BASE DE DATOS (MariaDB/MySQL)
+# ============================================================================
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': MariaConfig.Maria_NAME, 
+        'USER': MariaConfig.Maria_USER,
+        'PASSWORD': MariaConfig.Maria_PASSWORD,
+        'HOST': MariaConfig.Maria_HOST,
+        'PORT': MariaConfig.Maria_PORT,
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+        # Optimizaciones para mejor rendimiento con carga alta
+        'CONN_MAX_AGE': 1000,  # Mantener conexiones vivas por 5 minutos (reducir overhead)
+        'AUTOCOMMIT': True,
     }
 }
 
@@ -156,6 +181,44 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ============================================================================
+# CONFIGURACIÓN DE CACHE
+# ============================================================================
+
+# Configuración de cache usando Redis (mismo que Celery)
+# Intenta usar django-redis, si no está disponible usa el backend nativo de Django
+try:
+    # Usar django-redis si está disponible (mejor rendimiento y funcionalidades)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CeleryConfig.CELERY_BROKER_URL,  # Usar la misma URL de Redis
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': 'telemetria',
+            'TIMEOUT': 300,  # Tiempo de expiración por defecto: 5 minutos
+            'VERSION': 1,
+        }
+    }
+except ImportError:
+    # Fallback al backend nativo de Django si django-redis no está instalado
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': CeleryConfig.CELERY_BROKER_URL,
+            'KEY_PREFIX': 'telemetria',
+            'TIMEOUT': 300,
+            'VERSION': 1,
+        }
+    }
+
+# Tiempos de cache específicos para diferentes tipos de datos (en segundos)
+CACHE_TIMEOUT_SHORT = 60      # 1 minuto - para datos que cambian frecuentemente
+CACHE_TIMEOUT_MEDIUM = 300    # 5 minutos - para datos que cambian ocasionalmente
+CACHE_TIMEOUT_LONG = 3600     # 1 hora - para datos que cambian raramente
+CACHE_TIMEOUT_ANALYTICS = 1800  # 30 minutos - para resultados de análisis
 
 # ============================================================================
 # CONFIGURACIÓN DE LOGGING

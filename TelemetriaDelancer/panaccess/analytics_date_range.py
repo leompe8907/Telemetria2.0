@@ -9,6 +9,10 @@ por el usuario (desde día X hasta día Y), incluyendo:
 - Segmentación temporal del período
 - Análisis de eventos y picos
 
+IMPORTANTE: Los análisis trabajan con datos de la base de datos local (MergedTelemetricOTTDelancer),
+NO consultan directamente a PanAccess. Los datos se obtienen de PanAccess mediante
+telemetry_fetcher.py y se almacenan localmente para análisis.
+
 Todas las funciones requieren start_date y end_date como parámetros obligatorios.
 """
 
@@ -32,7 +36,7 @@ from django.db.models import (
 from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, Extract
 from django.db import connection
 
-from TelemetriaDelancer.models import MergedTelemetricOTT
+from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +90,7 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
     """
     _validate_date_range(start_date, end_date)
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date()
     )
@@ -251,13 +255,14 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
     """
     _validate_date_range(start_date, end_date)
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
         dataDate__isnull=False
     )
     
     # Para SQLite, usar Raw SQL para todos los períodos (TruncDate también falla en SQLite)
+    # MySQL/MariaDB y PostgreSQL usan Django ORM (más eficiente)
     if connection.vendor == 'sqlite':
         # Usar Raw SQL para SQLite
         if breakdown == 'daily':
@@ -308,7 +313,7 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
             columns = [col[0] for col in cursor.description]
             temporal_list = [dict(zip(columns, row)) for row in cursor.fetchall()]
     else:
-        # Para PostgreSQL, usar Django ORM
+        # Para MySQL/MariaDB y PostgreSQL, usar Django ORM (más eficiente)
         if breakdown == 'daily':
             queryset = queryset.annotate(period=TruncDate('dataDate'))
         elif breakdown == 'weekly':
@@ -384,7 +389,7 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
     """
     _validate_date_range(start_date, end_date)
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
         dataName__isnull=False
@@ -451,7 +456,7 @@ def get_period_user_analysis(start_date: datetime, end_date: datetime,
     """
     _validate_date_range(start_date, end_date)
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
         subscriberCode__isnull=False
@@ -517,7 +522,7 @@ def get_period_events_analysis(start_date: datetime, end_date: datetime,
     _check_pandas()
     _validate_date_range(start_date, end_date)
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
         dataDate__isnull=False
@@ -592,7 +597,7 @@ def get_period_trend_analysis(start_date: datetime, end_date: datetime) -> Dict[
     _check_pandas()
     _validate_date_range(start_date, end_date)
     
-    queryset = MergedTelemetricOTT.objects.filter(
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
         dataDate__isnull=False
