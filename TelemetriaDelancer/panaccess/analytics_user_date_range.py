@@ -241,7 +241,7 @@ def get_user_date_range_analysis(subscriber_code: str,
             "unique_channels": period_summary['unique_channels'],
             "unique_devices": period_summary['unique_devices'],
             "active_days": period_summary['active_days'],
-            "avg_duration_seconds": round(float(period_summary['avg_duration'] or 0), 2)
+            "avg_duration": round(float(period_summary['avg_duration'] or 0) / 3600.0, 2)  # Convertido a horas
         },
         "temporal_evolution": {
             "daily_activity": daily_list,

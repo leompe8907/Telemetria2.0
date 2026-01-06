@@ -130,9 +130,11 @@ def get_channel_audience(start_date: Optional[datetime] = None,
     for item in results:
         total_hours = (item['total_watch_time'] or 0) / 3600  # Convertir segundos a horas
         result_list.append({
-            **item,
-            'total_watch_time': float(item['total_watch_time'] or 0),
-            'total_hours': round(total_hours, 2)  # Horas con 2 decimales
+            'dataName': item['dataName'],
+            'unique_devices': item['unique_devices'],
+            'unique_users': item['unique_users'],
+            'total_views': item['total_views'],
+            'total_watch_time': round(total_hours, 2)  # Horas con 2 decimales
         })
     
     return result_list
@@ -189,7 +191,19 @@ def get_average_duration_by_channel(start_date: Optional[datetime] = None,
         total_watch_time=Sum('dataDuration')
     ).order_by('-avg_duration')
     
-    return list(results)
+    # Convertir tiempos de segundos a horas
+    result_list = []
+    for item in results:
+        avg_duration_hours = (item['avg_duration'] or 0) / 3600  # Convertir segundos a horas
+        total_watch_time_hours = (item['total_watch_time'] or 0) / 3600  # Convertir segundos a horas
+        result_list.append({
+            'dataName': item['dataName'],
+            'avg_duration': round(avg_duration_hours, 2),  # Duración promedio en horas
+            'total_views': item['total_views'],
+            'total_watch_time': round(total_watch_time_hours, 2)  # Tiempo total en horas
+        })
+    
+    return result_list
 
 
 # ============================================================================
@@ -426,21 +440,25 @@ def get_time_slot_analysis(start_date: Optional[datetime] = None,
     Returns:
         Dict con consumo por franja horaria
     """
-    queryset = MergedTelemetricOTTDelancer.objects.filter(
+    # Base queryset para contar TODOS los registros (sin filtrar por timeDate/dataDuration)
+    base_queryset = MergedTelemetricOTTDelancer.objects.all()
+    
+    if start_date:
+        base_queryset = base_queryset.filter(dataDate__gte=start_date.date())
+    if end_date:
+        base_queryset = base_queryset.filter(dataDate__lte=end_date.date())
+    
+    # Para calcular horas, necesitamos filtrar por timeDate y dataDuration
+    queryset_for_hours = base_queryset.filter(
         timeDate__isnull=False,
         dataDuration__isnull=False
     )
     
-    if start_date:
-        queryset = queryset.filter(dataDate__gte=start_date.date())
-    if end_date:
-        queryset = queryset.filter(dataDate__lte=end_date.date())
-    
     # timeDate es un IntegerField que contiene la hora directamente (0-23)
     # No necesitamos extraer la hora, solo usar el campo directamente
     
-    # Usar Django ORM con Case/When para clasificar por franja horaria
-    queryset = queryset.annotate(
+    # Usar Django ORM con Case/When para clasificar por franja horaria (para horas)
+    queryset_for_hours = queryset_for_hours.annotate(
         time_slot=Case(
             When(timeDate__gte=0, timeDate__lte=5, then=Value('madrugada')),
             When(timeDate__gte=6, timeDate__lte=11, then=Value('mañana')),
@@ -450,28 +468,45 @@ def get_time_slot_analysis(start_date: Optional[datetime] = None,
         )
     )
     
-    results = queryset.values('time_slot').annotate(
-        total_seconds=Sum('dataDuration'),
+    # Calcular horas por franja
+    hours_results = queryset_for_hours.values('time_slot').annotate(
+        total_seconds=Sum('dataDuration')
+    ).order_by('time_slot')
+    
+    # Para contar visualizaciones, usar TODOS los registros con timeDate (sin filtrar dataDuration)
+    queryset_for_views = base_queryset.filter(timeDate__isnull=False).annotate(
+        time_slot=Case(
+            When(timeDate__gte=0, timeDate__lte=5, then=Value('madrugada')),
+            When(timeDate__gte=6, timeDate__lte=11, then=Value('mañana')),
+            When(timeDate__gte=12, timeDate__lte=17, then=Value('tarde')),
+            default=Value('noche'),
+            output_field=CharField()
+        )
+    )
+    
+    views_results = queryset_for_views.values('time_slot').annotate(
         total_views=Count('id')
     ).order_by('time_slot')
     
     # Formatear resultados
     time_slots = {
-        'madrugada': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0},
-        'mañana': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0},
-        'tarde': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0},
-        'noche': {'total_hours': 0, 'total_views': 0, 'total_seconds': 0}
+        'madrugada': {'total_hours': 0, 'total_views': 0},
+        'mañana': {'total_hours': 0, 'total_views': 0},
+        'tarde': {'total_hours': 0, 'total_views': 0},
+        'noche': {'total_hours': 0, 'total_views': 0}
     }
     
-    for row in results:
+    # Procesar horas
+    for row in hours_results:
         slot = row['time_slot']
         total_seconds = float(row['total_seconds'] or 0)
         total_hours = total_seconds / 3600
-        time_slots[slot] = {
-            'total_seconds': total_seconds,
-            'total_hours': round(total_hours, 2),
-            'total_views': row['total_views']
-        }
+        time_slots[slot]['total_hours'] = round(total_hours, 2)
+    
+    # Procesar visualizaciones
+    for row in views_results:
+        slot = row['time_slot']
+        time_slots[slot]['total_views'] = row['total_views']
     
     # Calcular totales
     total_all_hours = sum(slot['total_hours'] for slot in time_slots.values())
@@ -535,8 +570,7 @@ def get_general_summary(start_date: Optional[datetime] = None,
         'active_users': unique_users,  # Usuarios/subscribers activos
         'unique_devices': unique_devices,
         'unique_channels': unique_channels,
-        'total_watch_time_seconds': total_seconds,
-        'total_watch_time_hours': round(total_hours, 2)  # Total de horas vistas
+        'total_watch_time': round(total_hours, 2)  # Total de horas vistas
     }
 
 
@@ -692,6 +726,10 @@ def get_correlation_analysis(start_date: Optional[datetime] = None,
     
     user_stats.columns = ['subscriberCode', 'total_watch_time', 'avg_duration', 
                          'total_views', 'unique_channels', 'avg_hour']
+    
+    # Convertir tiempos de segundos a horas
+    user_stats['total_watch_time'] = user_stats['total_watch_time'] / 3600.0
+    user_stats['avg_duration'] = user_stats['avg_duration'] / 3600.0
     
     # Calcular correlaciones
     numeric_cols = ['total_watch_time', 'avg_duration', 'total_views', 'unique_channels']
@@ -900,6 +938,10 @@ def get_user_segmentation_analysis(start_date: Optional[datetime] = None,
     user_metrics.columns = ['subscriberCode', 'total_watch_time', 'avg_duration',
                            'unique_channels', 'total_views']
     
+    # Convertir tiempos de segundos a horas
+    user_metrics['total_watch_time'] = user_metrics['total_watch_time'] / 3600.0
+    user_metrics['avg_duration'] = user_metrics['avg_duration'] / 3600.0
+    
     # Normalizar datos para clustering (usando NumPy)
     features = ['total_watch_time', 'avg_duration', 'unique_channels', 'total_views']
     X = user_metrics[features].values
@@ -927,16 +969,24 @@ def get_user_segmentation_analysis(start_date: Optional[datetime] = None,
     segment_info = []
     for seg_id in range(n_segments):
         seg_data = user_metrics[user_metrics['segment'] == seg_id]
+        
+        # Calcular totales del segmento (suma, no promedio)
+        total_watch_time_segment = seg_data['total_watch_time'].sum()
+        total_views_segment = seg_data['total_views'].sum()
+        
+        # Calcular avg_duration como total_watch_time / total_views
+        avg_duration_segment = total_watch_time_segment / total_views_segment if total_views_segment > 0 else 0
+        
         segment_info.append({
             "segment_id": seg_id,
             "segment_name": segment_names.get(seg_id, f"Segmento {seg_id}"),
             "user_count": len(seg_data),
             "percentage": round(len(seg_data) / len(user_metrics) * 100, 2),
             "avg_metrics": {
-                "total_watch_time": float(seg_data['total_watch_time'].mean()),
-                "avg_duration": float(seg_data['avg_duration'].mean()),
-                "unique_channels": float(seg_data['unique_channels'].mean()),
-                "total_views": float(seg_data['total_views'].mean())
+                "total_watch_time": round(float(total_watch_time_segment), 2),  # Suma total del segmento
+                "total_views": int(total_views_segment),  # Suma total del segmento
+                "avg_duration": round(avg_duration_segment, 2),  # total_watch_time / total_views
+                "unique_channels": float(seg_data['unique_channels'].mean())  # Promedio de canales únicos por usuario
             }
         })
     
@@ -991,6 +1041,10 @@ def get_channel_performance_matrix(start_date: Optional[datetime] = None,
     
     channel_metrics.columns = ['channel', 'total_views', 'unique_users', 'unique_devices',
                                 'total_watch_time', 'avg_duration', 'active_days']
+    
+    # Convertir tiempos de segundos a horas
+    channel_metrics['total_watch_time'] = channel_metrics['total_watch_time'] / 3600.0
+    channel_metrics['avg_duration'] = channel_metrics['avg_duration'] / 3600.0
     
     # Calcular métricas derivadas
     channel_metrics['views_per_user'] = (

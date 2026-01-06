@@ -170,7 +170,8 @@ def get_user_analysis(subscriber_code: str,
     # Estadísticas del usuario
     avg_hours_per_active_day = total_hours / profile['active_days'] if profile['active_days'] > 0 else 0
     avg_views_per_active_day = profile['total_views'] / profile['active_days'] if profile['active_days'] > 0 else 0
-    avg_session_duration = float(profile['avg_duration'] or 0)
+    avg_session_duration_seconds = float(profile['avg_duration'] or 0)
+    avg_session_duration_hours = avg_session_duration_seconds / 3600.0  # Convertir a horas
     frequency = (profile['active_days'] / days_in_period * 100) if days_in_period > 0 else 0
     
     return {
@@ -195,7 +196,7 @@ def get_user_analysis(subscriber_code: str,
         "user_statistics": {
             "avg_hours_per_active_day": round(avg_hours_per_active_day, 2),
             "avg_views_per_active_day": round(avg_views_per_active_day, 2),
-            "avg_session_duration_seconds": round(avg_session_duration, 2),
+            "avg_session_duration": round(avg_session_duration_hours, 2),  # Convertido a horas
             "frequency_percentage": round(frequency, 2),
             "days_in_period": days_in_period
         }

@@ -127,6 +127,11 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
     total_watch_time_seconds = float(duration_stats['total_watch_time'] or 0)
     total_watch_time_hours = total_watch_time_seconds / 3600.0
     
+    # Convertir duraciones de segundos a horas
+    avg_duration_seconds = float(duration_stats['avg_duration'] or 0)
+    max_duration_seconds = float(duration_stats['max_duration'] or 0)
+    min_duration_seconds = float(duration_stats['min_duration'] or 0)
+    
     return {
         "period": {
             "start_date": start_date.date().isoformat(),
@@ -138,11 +143,10 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
             "unique_users": unique_users,
             "unique_devices": unique_devices,
             "unique_channels": unique_channels,
-            "total_watch_time_seconds": total_watch_time_seconds,
-            "total_watch_time_hours": round(total_watch_time_hours, 2),
-            "avg_duration": float(duration_stats['avg_duration'] or 0),
-            "max_duration": float(duration_stats['max_duration'] or 0),
-            "min_duration": float(duration_stats['min_duration'] or 0),
+            "total_watch_time": round(total_watch_time_hours, 2),  # Solo horas
+            "avg_duration": round(avg_duration_seconds / 3600.0, 2),  # Convertido a horas
+            "max_duration": round(max_duration_seconds / 3600.0, 2),  # Convertido a horas
+            "min_duration": round(min_duration_seconds / 3600.0, 2),  # Convertido a horas
             "avg_views_per_day": round(total_views / days_in_period, 2) if days_in_period > 0 else 0
         },
         "top_channels": list(top_channels),

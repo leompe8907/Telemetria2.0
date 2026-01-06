@@ -33,7 +33,7 @@ SECRET_KEY = DjangoConfig.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = DjangoConfig.DEBUG
 
-ALLOWED_HOSTS = ['http://localhost:5173/']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 #ALLOWED_HOSTS = DjangoConfig.ALLOWED_HOSTS
 
 # ============================================================================
@@ -367,3 +367,38 @@ CELERY_TASK_TRACK_STARTED = CeleryConfig.CELERY_TASK_TRACK_STARTED
 
 # Sin límites de tiempo - las tareas duran lo que necesiten
 # (No se configuran CELERY_TASK_TIME_LIMIT ni CELERY_TASK_SOFT_TIME_LIMIT)
+
+
+# ============================================================================
+# CONFIGURACIÓN DE CORS
+# ============================================================================
+
+# Permitir todos los orígenes en desarrollo (cambiar en producción)
+CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo
+
+# Permitir credenciales (cookies, headers de autenticación)
+CORS_ALLOW_CREDENTIALS = True
+
+# Métodos HTTP permitidos
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'HEAD',
+]
+
+# Headers permitidos
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
