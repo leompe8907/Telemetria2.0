@@ -46,7 +46,8 @@ def get_user_analysis(subscriber_code: str,
         Dict con análisis completo del usuario
     """
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        subscriberCode=subscriber_code
+        subscriberCode=subscriber_code,
+        dataDuration__isnull=False
     )
     
     if start_date:

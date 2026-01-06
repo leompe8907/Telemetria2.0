@@ -14084,3 +14084,72 @@
 [2026-01-06 12:09:34] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
 [2026-01-06 12:09:34] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
 [2026-01-06 12:09:34] INFO [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 200 407317
+[2026-01-06 13:02:53] INFO [django.server] "OPTIONS /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 0
+[2026-01-06 13:02:53] INFO [django.server] "OPTIONS /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 0
+[2026-01-06 13:02:53] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 13:02:53] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 13:02:55] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 13:02:55] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 13:03:07] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 13:03:08] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 13:03:13] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 13:03:13] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 13:03:14] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 13:03:14] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 13:03:20] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 13:03:20] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 13:03:21] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 13:03:21] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 13:03:23] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 13:03:24] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 13:03:26] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 13:03:28] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 13:03:28] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 13:03:29] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 13:03:29] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 13:03:29] INFO [django.server] "GET /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 407317
+[2026-01-06 13:03:41] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 13:03:41] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 13:03:41] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 13:03:42] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 13:03:44] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 13:03:45] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 13:03:47] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 13:03:49] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 13:03:49] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 13:03:49] INFO [django.server] "GET /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 407317
+[2026-01-06 14:32:02] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\panaccess\analytics.py changed, reloading.
+[2026-01-06 14:32:06] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:32:08] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:35:06] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:35:06] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 14:35:19] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 14:35:20] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:35:20] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 14:35:32] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 14:35:34] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 14:35:45] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 14:35:45] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 14:35:47] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 14:35:58] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 14:35:59] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 14:35:59] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 14:35:59] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 14:36:00] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 14:36:01] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 14:36:03] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 14:36:04] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 14:36:06] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 14:36:08] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 14:36:08] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 14:36:08] INFO [django.server] "GET /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 406035
+[2026-01-06 14:36:15] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 14:36:15] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 14:36:15] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 14:36:16] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 14:36:18] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 14:36:19] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 14:36:20] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 14:36:22] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 14:36:22] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 14:36:23] INFO [django.server] "GET /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 406035

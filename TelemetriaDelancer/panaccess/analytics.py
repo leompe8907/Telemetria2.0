@@ -69,7 +69,8 @@ def get_top_channels(limit: int = 10, start_date: Optional[datetime] = None,
     Usa Django ORM con agregaciones optimizadas que aprovechan índices.
     """
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        dataName__isnull=False
+        dataName__isnull=False,
+        dataDuration__isnull=False
     )
     
     # Filtros opcionales por fecha
@@ -109,7 +110,8 @@ def get_channel_audience(start_date: Optional[datetime] = None,
     Usa Django ORM con agregaciones que aprovechan índices compuestos.
     """
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        dataName__isnull=False
+        dataName__isnull=False,
+        dataDuration__isnull=False
     )
     
     if start_date:
@@ -150,7 +152,8 @@ def get_peak_hours_by_channel(channel: Optional[str] = None,
     """
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataName__isnull=False,
-        timeDate__isnull=False
+        timeDate__isnull=False,
+        dataDuration__isnull=False
     )
     
     if channel:
@@ -220,7 +223,8 @@ def get_temporal_analysis(period: str = 'daily',
     Compatible con MySQL/MariaDB (usando Django ORM) y SQLite (usando Raw SQL como fallback).
     """
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        dataDate__isnull=False
+        dataDate__isnull=False,
+        dataDuration__isnull=False
     )
     
     if start_date:
@@ -237,7 +241,7 @@ def get_temporal_analysis(period: str = 'daily',
                 date(dataDate) as period,
                 COUNT(*) as views
             FROM merged_telemetric_ott
-            WHERE dataDate IS NOT NULL
+            WHERE dataDate IS NOT NULL AND dataDuration IS NOT NULL
             """
         elif period == 'weekly':
             # SQLite: usar strftime para semana
@@ -246,7 +250,7 @@ def get_temporal_analysis(period: str = 'daily',
                 strftime('%%Y-W%%W', dataDate) as period,
                 COUNT(*) as views
             FROM merged_telemetric_ott
-            WHERE dataDate IS NOT NULL
+            WHERE dataDate IS NOT NULL AND dataDuration IS NOT NULL
             """
         else:  # monthly
             # SQLite: usar strftime para mes
@@ -255,7 +259,7 @@ def get_temporal_analysis(period: str = 'daily',
                 strftime('%%Y-%%m', dataDate) as period,
                 COUNT(*) as views
             FROM merged_telemetric_ott
-            WHERE dataDate IS NOT NULL
+            WHERE dataDate IS NOT NULL AND dataDuration IS NOT NULL
             """
         
         params = []
@@ -440,18 +444,19 @@ def get_time_slot_analysis(start_date: Optional[datetime] = None,
     Returns:
         Dict con consumo por franja horaria
     """
-    # Base queryset para contar TODOS los registros (sin filtrar por timeDate/dataDuration)
-    base_queryset = MergedTelemetricOTTDelancer.objects.all()
+    # Base queryset - filtrar por dataDuration para consistencia
+    base_queryset = MergedTelemetricOTTDelancer.objects.filter(
+        dataDuration__isnull=False
+    )
     
     if start_date:
         base_queryset = base_queryset.filter(dataDate__gte=start_date.date())
     if end_date:
         base_queryset = base_queryset.filter(dataDate__lte=end_date.date())
     
-    # Para calcular horas, necesitamos filtrar por timeDate y dataDuration
+    # Para calcular horas, necesitamos filtrar por timeDate
     queryset_for_hours = base_queryset.filter(
-        timeDate__isnull=False,
-        dataDuration__isnull=False
+        timeDate__isnull=False
     )
     
     # timeDate es un IntegerField que contiene la hora directamente (0-23)
@@ -473,7 +478,7 @@ def get_time_slot_analysis(start_date: Optional[datetime] = None,
         total_seconds=Sum('dataDuration')
     ).order_by('time_slot')
     
-    # Para contar visualizaciones, usar TODOS los registros con timeDate (sin filtrar dataDuration)
+    # Para contar visualizaciones, usar registros con timeDate (ya filtrado por dataDuration en base_queryset)
     queryset_for_views = base_queryset.filter(timeDate__isnull=False).annotate(
         time_slot=Case(
             When(timeDate__gte=0, timeDate__lte=5, then=Value('madrugada')),
@@ -544,7 +549,9 @@ def get_general_summary(start_date: Optional[datetime] = None,
     Returns:
         Dict con resumen general
     """
-    queryset = MergedTelemetricOTTDelancer.objects.all()
+    queryset = MergedTelemetricOTTDelancer.objects.filter(
+        dataDuration__isnull=False
+    )
     
     if start_date:
         queryset = queryset.filter(dataDate__gte=start_date.date())
@@ -558,7 +565,7 @@ def get_general_summary(start_date: Optional[datetime] = None,
     unique_channels = queryset.filter(dataName__isnull=False).values('dataName').distinct().count()
     
     # Total de horas vistas (dataDuration está en segundos)
-    duration_stats = queryset.filter(dataDuration__isnull=False).aggregate(
+    duration_stats = queryset.aggregate(
         total_seconds=Sum('dataDuration')
     )
     
@@ -586,7 +593,8 @@ def get_geographic_analysis(start_date: Optional[datetime] = None,
     Usa Django ORM con agregaciones optimizadas.
     """
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        whoisCountry__isnull=False
+        whoisCountry__isnull=False,
+        dataDuration__isnull=False
     )
     
     if start_date:
@@ -632,7 +640,8 @@ def get_cohort_analysis_pandas(start_date: Optional[datetime] = None,
     # Cargar solo los datos necesarios (no toda la tabla)
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode__isnull=False,
-        timestamp__isnull=False
+        timestamp__isnull=False,
+        dataDuration__isnull=False
     )
     
     if start_date:
@@ -827,7 +836,8 @@ def get_time_series_analysis(channel: Optional[str] = None,
     _check_pandas()
     
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        dataDate__isnull=False
+        dataDate__isnull=False,
+        dataDuration__isnull=False
     )
     
     if channel:
@@ -912,7 +922,8 @@ def get_user_segmentation_analysis(start_date: Optional[datetime] = None,
     _check_pandas()
     
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        subscriberCode__isnull=False
+        subscriberCode__isnull=False,
+        dataDuration__isnull=False
     )
     
     if start_date:
@@ -1014,7 +1025,8 @@ def get_channel_performance_matrix(start_date: Optional[datetime] = None,
     _check_pandas()
     
     queryset = MergedTelemetricOTTDelancer.objects.filter(
-        dataName__isnull=False
+        dataName__isnull=False,
+        dataDuration__isnull=False
     )
     
     if start_date:

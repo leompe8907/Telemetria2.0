@@ -67,7 +67,8 @@ def get_user_date_range_analysis(subscriber_code: str,
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         subscriberCode=subscriber_code,
         dataDate__gte=start_date.date(),
-        dataDate__lte=end_date.date()
+        dataDate__lte=end_date.date(),
+        dataDuration__isnull=False
     )
     
     total_records = queryset.count()
@@ -180,7 +181,8 @@ def get_user_date_range_analysis(subscriber_code: str,
     # Comparación con promedio general (en el mismo período)
     general_avg = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
-        dataDate__lte=end_date.date()
+        dataDate__lte=end_date.date(),
+        dataDuration__isnull=False
     ).aggregate(
         avg_views_per_user=Count('id') / Count('subscriberCode', distinct=True),
         avg_hours_per_user=Sum('dataDuration') / 3600.0 / Count('subscriberCode', distinct=True)

@@ -92,7 +92,8 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
     
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
-        dataDate__lte=end_date.date()
+        dataDate__lte=end_date.date(),
+        dataDuration__isnull=False
     )
     
     # Métricas generales
@@ -102,7 +103,7 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
     unique_channels = queryset.filter(dataName__isnull=False).values('dataName').distinct().count()
     
     # Métricas de tiempo
-    duration_stats = queryset.filter(dataDuration__isnull=False).aggregate(
+    duration_stats = queryset.aggregate(
         total_watch_time=Sum('dataDuration'),
         avg_duration=Avg('dataDuration'),
         max_duration=Max('dataDuration'),
@@ -262,7 +263,8 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
-        dataDate__isnull=False
+        dataDate__isnull=False,
+        dataDuration__isnull=False
     )
     
     # Para SQLite, usar Raw SQL para todos los períodos (TruncDate también falla en SQLite)
@@ -396,7 +398,8 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
-        dataName__isnull=False
+        dataName__isnull=False,
+        dataDuration__isnull=False
     )
     
     total_period_views = queryset.count()
@@ -463,7 +466,8 @@ def get_period_user_analysis(start_date: datetime, end_date: datetime,
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
-        subscriberCode__isnull=False
+        subscriberCode__isnull=False,
+        dataDuration__isnull=False
     )
     
     # Análisis por usuario
@@ -529,7 +533,8 @@ def get_period_events_analysis(start_date: datetime, end_date: datetime,
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
-        dataDate__isnull=False
+        dataDate__isnull=False,
+        dataDuration__isnull=False
     )
     
     # Cargar datos diarios
@@ -604,7 +609,8 @@ def get_period_trend_analysis(start_date: datetime, end_date: datetime) -> Dict[
     queryset = MergedTelemetricOTTDelancer.objects.filter(
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
-        dataDate__isnull=False
+        dataDate__isnull=False,
+        dataDuration__isnull=False
     )
     
     # Cargar datos diarios
