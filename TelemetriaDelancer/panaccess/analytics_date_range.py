@@ -85,8 +85,6 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
         - Canales únicos
         - Tiempo total de visualización
         - Duración promedio
-        - Top canales
-        - Distribución por día
     """
     _validate_date_range(start_date, end_date)
     
@@ -109,17 +107,6 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
         max_duration=Max('dataDuration'),
         min_duration=Min('dataDuration')
     )
-    
-    # Top 10 canales del período
-    top_channels = queryset.filter(dataName__isnull=False).values('dataName').annotate(
-        views=Count('id'),
-        unique_users=Count('subscriberCode', distinct=True)
-    ).order_by('-views')[:10]
-    
-    # Distribución por día
-    daily_distribution = queryset.values('dataDate').annotate(
-        views=Count('id')
-    ).order_by('dataDate')
     
     # Días del período
     days_in_period = (end_date.date() - start_date.date()).days + 1
@@ -149,9 +136,7 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
             "max_duration": round(max_duration_seconds / 3600.0, 2),  # Convertido a horas
             "min_duration": round(min_duration_seconds / 3600.0, 2),  # Convertido a horas
             "avg_views_per_day": round(total_views / days_in_period, 2) if days_in_period > 0 else 0
-        },
-        "top_channels": list(top_channels),
-        "daily_distribution": list(daily_distribution)
+        }
     }
 
 
@@ -378,7 +363,7 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
 # ============================================================================
 
 def get_period_channel_analysis(start_date: datetime, end_date: datetime,
-                               top_n: int = 20) -> Dict[str, Any]:
+                               top_n: Optional[int] = None) -> Dict[str, Any]:
     """
     Análisis detallado de canales en el período seleccionado.
     
@@ -388,7 +373,7 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
     Args:
         start_date: Fecha de inicio
         end_date: Fecha de fin
-        top_n: Número de canales top a retornar
+        top_n: Número de canales top a retornar (None = sin límite)
     
     Returns:
         Dict con análisis de canales del período
@@ -405,14 +390,20 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
     total_period_views = queryset.count()
     
     # Análisis por canal
-    channel_analysis = queryset.values('dataName').annotate(
+    channel_query = queryset.values('dataName').annotate(
         total_views=Count('id'),
         unique_users=Count('subscriberCode', distinct=True),
         unique_devices=Count('deviceId', distinct=True),
         total_watch_time=Sum('dataDuration'),
         avg_duration=Avg('dataDuration'),
         active_days=Count('dataDate', distinct=True)
-    ).order_by('-total_views')[:top_n]
+    ).order_by('-total_views')
+    
+    # Aplicar límite solo si se especifica
+    if top_n is not None:
+        channel_analysis = channel_query[:top_n]
+    else:
+        channel_analysis = channel_query
     
     # Calcular porcentajes y métricas derivadas
     channel_list = []
@@ -420,12 +411,22 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
         percentage = (channel['total_views'] / total_period_views * 100) if total_period_views > 0 else 0
         views_per_user = (channel['total_views'] / channel['unique_users']) if channel['unique_users'] > 0 else 0
         
+        # Convertir total_watch_time y avg_duration de segundos a horas
+        total_watch_time_hours = (channel['total_watch_time'] or 0) / 3600.0
+        avg_duration_hours = (channel['avg_duration'] or 0) / 3600.0
+        
         channel_list.append({
-            **channel,
+            'dataName': channel['dataName'],
+            'total_views': channel['total_views'],
+            'unique_users': channel['unique_users'],
+            'unique_devices': channel['unique_devices'],
+            'total_watch_time': round(total_watch_time_hours, 2),  # En horas
+            'avg_duration': round(avg_duration_hours, 2),  # En horas
+            'active_days': channel['active_days'],
             "percentage": round(percentage, 2),
             "views_per_user": round(views_per_user, 2),
             "watch_time_per_user": round(
-                (channel['total_watch_time'] or 0) / channel['unique_users'] if channel['unique_users'] > 0 else 0,
+                total_watch_time_hours / channel['unique_users'] if channel['unique_users'] > 0 else 0,
                 2
             )
         })
@@ -446,7 +447,7 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
 # ============================================================================
 
 def get_period_user_analysis(start_date: datetime, end_date: datetime,
-                            top_n: int = 50) -> Dict[str, Any]:
+                            top_n: Optional[int] = None) -> Dict[str, Any]:
     """
     Análisis de comportamiento de usuarios en el período seleccionado.
     
@@ -456,7 +457,7 @@ def get_period_user_analysis(start_date: datetime, end_date: datetime,
     Args:
         start_date: Fecha de inicio
         end_date: Fecha de fin
-        top_n: Número de usuarios top a retornar
+        top_n: Número de usuarios top a retornar (None = sin límite)
     
     Returns:
         Dict con análisis de usuarios del período
@@ -471,7 +472,7 @@ def get_period_user_analysis(start_date: datetime, end_date: datetime,
     )
     
     # Análisis por usuario
-    user_analysis = queryset.values('subscriberCode').annotate(
+    user_query = queryset.values('subscriberCode').annotate(
         total_views=Count('id'),
         unique_channels=Count('dataName', distinct=True),
         unique_devices=Count('deviceId', distinct=True),
@@ -480,7 +481,13 @@ def get_period_user_analysis(start_date: datetime, end_date: datetime,
         active_days=Count('dataDate', distinct=True),
         first_view_date=Min('dataDate'),
         last_view_date=Max('dataDate')
-    ).order_by('-total_views')[:top_n]
+    ).order_by('-total_views')
+    
+    # Aplicar límite solo si se especifica
+    if top_n is not None:
+        user_analysis = user_query[:top_n]
+    else:
+        user_analysis = user_query
     
     # Calcular métricas derivadas
     user_list = []

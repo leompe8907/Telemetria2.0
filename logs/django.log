@@ -14153,3 +14153,575 @@
 [2026-01-06 14:36:22] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
 [2026-01-06 14:36:22] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
 [2026-01-06 14:36:23] INFO [django.server] "GET /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 406035
+[2026-01-06 14:47:22] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:47:24] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:47:25] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:47:29] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:47:31] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:47:32] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:47:39] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:47:41] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:47:42] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:47:48] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:47:50] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:47:51] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:47:58] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:48:01] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:48:02] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:48:09] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:48:10] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:48:12] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:48:15] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:48:16] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:48:18] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:48:43] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 14:48:45] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:48:47] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:49:43] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:49:43] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 14:49:57] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 14:50:02] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:50:02] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 14:50:11] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 14:50:17] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 14:50:25] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 14:50:25] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 14:50:32] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 14:50:40] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 14:50:40] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 14:50:40] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 14:50:41] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 14:50:43] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 14:50:44] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 14:50:46] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 14:50:46] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 14:50:46] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 14:50:48] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 14:50:48] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 14:50:48] INFO [django.server] "GET /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 406035
+[2026-01-06 14:50:58] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 14:50:58] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 14:50:58] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 14:50:59] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 14:51:01] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 14:51:02] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 14:51:04] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 14:51:06] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 14:51:06] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 14:51:06] INFO [django.server] "GET /delancer/telemetry/analytics/?no_cache/ HTTP/1.1" 200 406035
+[2026-01-06 14:55:19] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:55:21] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:55:37] INFO [django.server] "OPTIONS /delancer/telemetry/analytics// HTTP/1.1" 200 0
+[2026-01-06 14:55:37] INFO [django.server] "OPTIONS /delancer/telemetry/analytics// HTTP/1.1" 200 0
+[2026-01-06 14:55:37] WARNING [django.server] "GET /delancer/telemetry/analytics// HTTP/1.1" 404 5158
+[2026-01-06 14:55:37] WARNING [django.server] "GET /delancer/telemetry/analytics// HTTP/1.1" 404 5158
+[2026-01-06 14:56:01] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:56:03] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:56:11] INFO [django.server] "OPTIONS /delancer/telemetry/analytics/ HTTP/1.1" 200 0
+[2026-01-06 14:56:11] INFO [django.server] "OPTIONS /delancer/telemetry/analytics/ HTTP/1.1" 200 0
+[2026-01-06 14:56:12] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:56:12] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 14:56:25] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 14:56:31] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:56:31] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 14:56:37] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 14:56:45] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 14:56:51] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 14:56:52] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 14:56:59] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 14:57:05] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 14:57:06] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 14:57:06] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 14:57:07] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 14:57:10] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 14:57:11] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 14:57:13] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 14:57:15] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 14:57:15] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 14:57:15] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 14:57:15] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 14:57:16] INFO [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 200 406035
+[2026-01-06 14:57:29] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 14:57:29] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 14:57:29] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 14:57:29] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 14:57:31] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 14:57:32] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 14:57:34] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 14:57:35] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 14:57:35] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 14:57:35] INFO [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 200 406035
+[2026-01-06 14:58:58] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:58:58] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 14:59:13] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 14:59:27] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 14:59:47] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 14:59:48] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 14:59:59] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 14:59:59] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 15:00:12] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 15:00:25] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 15:00:36] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 15:00:37] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 15:00:49] INFO [TelemetriaDelancer.views] Ejecutando: temporal
+[2026-01-06 15:00:49] INFO [TelemetriaDelancer.views] Ejecutando: geographic
+[2026-01-06 15:00:49] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 15:00:49] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 15:00:51] INFO [TelemetriaDelancer.views] Ejecutando: time_series
+[2026-01-06 15:00:52] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 15:00:54] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 15:00:56] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 15:00:56] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 15:00:56] INFO [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 200 406035
+[2026-01-06 15:05:34] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:05:37] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:05:38] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:05:42] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:05:43] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:05:44] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:05:47] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:05:48] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:05:50] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:05:52] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:05:54] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:05:55] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:05:57] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:05:59] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:06:00] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:06:08] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:06:11] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:06:13] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:06:18] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:06:20] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:06:21] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:06:26] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 15:06:26] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 15:06:41] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 15:06:43] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:06:45] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:06:47] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:07:09] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:07:11] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:07:12] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:07:38] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:07:42] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:07:43] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:07:48] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 15:07:48] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 15:08:01] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 15:08:13] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 15:08:38] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:08:39] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:08:53] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-06 15:08:53] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-06 15:09:06] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-06 15:09:18] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-06 15:09:30] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-06 15:09:30] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-06 15:09:42] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-06 15:09:43] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-06 15:09:45] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-06 15:09:47] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-06 15:09:50] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-06 15:09:50] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-06 15:09:50] INFO [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 200 364576
+[2026-01-06 15:14:07] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-06 15:14:09] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-06 15:14:10] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-06 15:16:25] WARNING [django.server] "POST /delancer/telemetry/users/analysis/general/ HTTP/1.1" 405 41
+[2026-01-06 15:16:34] INFO [TelemetriaDelancer.views] Ejecutando análisis general de usuarios - start_date=None, end_date=None
+[2026-01-06 15:16:50] INFO [django.server] "GET /delancer/telemetry/users/analysis/general/ HTTP/1.1" 200 13893
+[2026-01-07 11:12:21] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 11:12:23] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 11:12:47] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 11:12:48] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 11:15:17] WARNING [django.server] "POST /delancer/telemetry/period-analysis/2026-01-1/2025-10-1/ HTTP/1.1" 404 5234
+[2026-01-07 11:15:31] WARNING [django.server] "POST /delancer/telemetry/period-analysis/2026-01-1/2025-10-1/ HTTP/1.1" 404 5234
+[2026-01-07 11:17:01] WARNING [django.server] "GET /delancer/telemetry/period-analysis/2026-01-1/2025-10-1/ HTTP/1.1" 404 5233
+[2026-01-07 11:19:37] ERROR [django.server] "GET /delancer/telemetry/period-analysis/ HTTP/1.1" 500 111193
+[2026-01-07 11:19:47] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-01 a 2025-12-31
+[2026-01-07 11:19:47] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 11:19:53] INFO [TelemetriaDelancer.views] Ejecutando: comparison
+[2026-01-07 11:20:20] INFO [TelemetriaDelancer.views] Ejecutando: temporal_breakdown
+[2026-01-07 11:20:20] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 11:20:27] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 11:20:29] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 11:20:29] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 11:20:36] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 11:20:36] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 11:20:36] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 11:20:36] INFO [TelemetriaDelancer.views] Ejecutando: events
+[2026-01-07 11:20:37] INFO [TelemetriaDelancer.views] Ejecutando: trend
+[2026-01-07 11:20:37] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 11:20:37] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 11:20:37] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 11:20:37] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 334346
+[2026-01-07 12:13:47] INFO [django.server] "OPTIONS /delancer/telemetry/period-analysis/ HTTP/1.1" 200 0
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2026-01-05 a 2025-01-12
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 12:13:47] ERROR [TelemetriaDelancer.views] Error en summary: start_date debe ser anterior a end_date
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: comparison
+[2026-01-07 12:13:47] ERROR [TelemetriaDelancer.views] Error en comparison: start_date debe ser anterior a end_date
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: temporal_breakdown
+[2026-01-07 12:13:47] ERROR [TelemetriaDelancer.views] Error en temporal_breakdown: start_date debe ser anterior a end_date
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 12:13:47] ERROR [TelemetriaDelancer.views] Error en channels: start_date debe ser anterior a end_date
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 12:13:47] ERROR [TelemetriaDelancer.views] Error en users: start_date debe ser anterior a end_date
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: events
+[2026-01-07 12:13:47] ERROR [TelemetriaDelancer.views] Error en events: start_date debe ser anterior a end_date
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: trend
+[2026-01-07 12:13:47] ERROR [TelemetriaDelancer.views] Error en trend: start_date debe ser anterior a end_date
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 12:13:47] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 12:13:47] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 1000
+[2026-01-07 12:15:12] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-01 a 2025-12-31
+[2026-01-07 12:15:12] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 12:15:18] INFO [TelemetriaDelancer.views] Ejecutando: comparison
+[2026-01-07 12:15:42] INFO [TelemetriaDelancer.views] Ejecutando: temporal_breakdown
+[2026-01-07 12:15:42] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 12:15:48] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 12:15:50] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 12:15:51] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 12:15:56] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 12:15:56] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 12:15:56] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 12:15:57] INFO [TelemetriaDelancer.views] Ejecutando: events
+[2026-01-07 12:15:57] INFO [TelemetriaDelancer.views] Ejecutando: trend
+[2026-01-07 12:15:57] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 12:15:58] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 12:15:58] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 12:15:58] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 334346
+[2026-01-07 12:17:39] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 12:17:40] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 12:38:33] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 12:38:33] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 12:38:37] INFO [TelemetriaDelancer.views] Ejecutando: comparison
+[2026-01-07 12:39:01] INFO [TelemetriaDelancer.views] Ejecutando: temporal_breakdown
+[2026-01-07 12:39:01] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 12:39:04] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 12:39:05] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 12:39:06] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 12:39:09] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 12:39:09] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 12:39:09] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 12:39:09] INFO [TelemetriaDelancer.views] Ejecutando: events
+[2026-01-07 12:39:10] INFO [TelemetriaDelancer.views] Ejecutando: trend
+[2026-01-07 12:39:10] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 12:39:10] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 12:39:10] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 12:39:10] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 323918
+[2026-01-07 12:51:58] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 12:52:00] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 12:52:01] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 12:52:03] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 12:52:04] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 12:52:05] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 12:52:10] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 12:52:11] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 12:52:12] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 12:52:16] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 12:52:17] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 12:52:18] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 12:52:22] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 12:52:24] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 12:52:25] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 12:52:38] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 12:52:39] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 12:52:40] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:03:32] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:03:33] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:03:34] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:03:36] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:03:37] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:03:38] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:03:41] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:03:43] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:03:44] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:03:45] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:03:47] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:03:48] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:03:52] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:03:54] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:03:55] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:03:57] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:03:58] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:03:59] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:04:10] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:04:11] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:04:12] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:04:54] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 13:04:54] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 13:04:58] INFO [TelemetriaDelancer.views] Ejecutando: temporal_breakdown
+[2026-01-07 13:04:58] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 13:05:02] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 13:05:03] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 13:05:04] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 13:05:07] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 13:05:07] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 13:05:07] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 13:05:07] INFO [TelemetriaDelancer.views] Ejecutando: trend
+[2026-01-07 13:05:08] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 13:05:08] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 13:05:08] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 13:05:08] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 314937
+[2026-01-07 13:07:33] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\panaccess\analytics_date_range.py changed, reloading.
+[2026-01-07 13:07:35] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:07:36] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:18:23] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:18:25] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:18:26] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:18:28] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:18:29] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:18:30] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:18:34] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:18:36] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:18:37] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:18:39] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:18:40] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:18:41] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:18:54] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:18:55] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:18:56] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:22:47] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:22:48] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:22:49] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:26:22] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 13:26:22] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 13:26:26] INFO [TelemetriaDelancer.views] Ejecutando: temporal_breakdown
+[2026-01-07 13:26:26] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 13:26:29] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 13:26:30] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 13:26:30] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 13:26:34] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 13:26:34] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 13:26:34] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 13:26:34] INFO [TelemetriaDelancer.views] Ejecutando: trend
+[2026-01-07 13:26:34] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 13:26:35] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 13:26:35] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 13:26:35] INFO [django.server] - Broken pipe from ('127.0.0.1', 55435)
+[2026-01-07 13:26:40] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 13:26:40] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 13:26:45] INFO [TelemetriaDelancer.views] Ejecutando: temporal_breakdown
+[2026-01-07 13:26:45] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 13:26:48] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 13:26:49] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 13:26:49] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 13:26:53] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 13:26:53] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 13:26:53] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 13:26:54] INFO [TelemetriaDelancer.views] Ejecutando: trend
+[2026-01-07 13:26:54] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 13:26:54] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 13:26:54] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 13:26:54] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 353534
+[2026-01-07 13:30:44] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\panaccess\analytics_date_range.py changed, reloading.
+[2026-01-07 13:30:45] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:30:46] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:56:29] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:56:31] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:56:32] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:56:35] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:56:36] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:56:37] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:57:18] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:57:19] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:57:20] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:59:07] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:59:08] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:59:09] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:59:12] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:59:13] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:59:14] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 13:59:36] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 13:59:38] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 13:59:39] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:04:28] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:04:30] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:04:31] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:04:32] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:04:34] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:04:34] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:04:36] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:04:38] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:04:39] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:04:42] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:04:43] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:04:44] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:04:46] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:04:48] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:04:49] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:04:53] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:04:54] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:04:55] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:04:57] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:04:59] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:05:00] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:05:02] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:05:03] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:05:04] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:05:23] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:05:24] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:05:25] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:07:46] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 14:07:46] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 14:07:47] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 14:07:51] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 14:07:52] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 14:07:52] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 14:07:52] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 14:07:52] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 14:07:53] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 14:07:53] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 14:07:53] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 14:07:53] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 324183
+[2026-01-07 14:11:14] INFO [django.server] "OPTIONS /delancer/telemetry/analytics/ HTTP/1.1" 200 0
+[2026-01-07 14:11:14] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-07 14:11:14] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-07 14:11:27] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 14:11:39] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-07 14:11:51] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 14:11:52] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 14:12:04] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 14:12:04] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-07 14:12:06] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-07 14:12:07] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 14:12:09] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-07 14:12:09] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 14:12:09] INFO [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 200 364576
+[2026-01-07 14:16:55] INFO [django.server] "OPTIONS /delancer/telemetry/period-analysis/ HTTP/1.1" 200 0
+[2026-01-07 14:16:55] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 14:16:55] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 14:16:56] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 14:17:00] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 14:17:00] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 14:17:01] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 14:17:01] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 14:17:01] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 14:17:01] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 14:17:02] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 14:17:02] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 14:17:02] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 324183
+[2026-01-07 14:44:08] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-01 a 2025-12-31
+[2026-01-07 14:44:08] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 14:44:09] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 14:44:14] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 14:44:16] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 14:44:16] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 14:44:16] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 14:44:17] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 14:44:17] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 14:44:17] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 14:44:17] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 14:44:17] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 333712
+[2026-01-07 14:48:31] INFO [django.utils.autoreload] C:\Users\Leonard\Desktop\Telemetria\back\TelemetriaDelancer\views.py changed, reloading.
+[2026-01-07 14:48:32] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-07 14:48:33] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-07 14:51:35] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 14:51:35] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 14:51:36] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 14:51:39] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 14:51:40] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 14:51:40] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 14:51:40] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 14:51:40] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 14:51:40] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 14:51:41] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 14:51:41] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 14:51:41] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 324183
+[2026-01-07 15:04:06] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 15:04:06] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 15:04:07] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 15:04:10] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 15:04:11] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 15:04:11] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 15:04:11] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 15:04:12] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 15:04:12] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 15:04:12] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 15:04:12] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 15:04:12] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 324183
+[2026-01-07 15:15:59] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 15:15:59] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 15:16:00] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 15:16:04] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 15:16:05] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 15:16:05] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 15:16:05] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 15:16:05] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 15:16:06] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 15:16:06] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 15:16:06] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 15:16:06] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 324183
+[2026-01-07 15:39:52] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 15:39:52] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 15:39:52] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 15:39:56] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 15:39:57] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 15:39:57] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 15:39:57] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 15:39:57] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 15:39:58] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 15:39:58] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 15:39:58] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 15:39:58] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 324183
+[2026-01-07 15:41:16] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-08 a 2026-01-07
+[2026-01-07 15:41:16] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-07 15:41:16] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-07 15:41:19] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-07 15:41:20] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-07 15:41:21] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-07 15:41:21] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-07 15:41:21] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-07 15:41:21] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-07 15:41:21] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-07 15:41:21] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-07 15:41:21] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 324183
+[2026-01-12 09:42:25] INFO [TelemetriaDelancer.apps] [INIT] Inicializando PanAccess singleton...
+[2026-01-12 09:42:26] INFO [django.utils.autoreload] Watching for file changes with StatReloader
+[2026-01-12 09:43:41] INFO [django.server] "OPTIONS /delancer/telemetry/analytics/ HTTP/1.1" 200 0
+[2026-01-12 09:43:49] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis generales
+[2026-01-12 09:43:49] INFO [TelemetriaDelancer.views] Ejecutando: general_summary
+[2026-01-12 09:44:08] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-12 09:44:22] INFO [TelemetriaDelancer.views] Ejecutando: channel_audience
+[2026-01-12 09:44:39] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-12 09:44:39] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-12 09:44:52] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-12 09:44:53] INFO [TelemetriaDelancer.views] Ejecutando: correlation
+[2026-01-12 09:44:54] INFO [TelemetriaDelancer.views] Ejecutando: segmentation
+[2026-01-12 09:44:56] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-12 09:44:58] INFO [TelemetriaDelancer.views] Todos los análisis generales completados
+[2026-01-12 09:44:58] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-12 09:44:58] INFO [django.server] "GET /delancer/telemetry/analytics/ HTTP/1.1" 200 364576
+[2026-01-12 09:45:12] INFO [django.server] "OPTIONS /delancer/telemetry/period-analysis/ HTTP/1.1" 200 0
+[2026-01-12 09:45:12] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-13 a 2026-01-12
+[2026-01-12 09:45:12] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-12 09:45:13] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-12 09:45:14] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-12 09:45:14] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-12 09:45:15] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-12 09:45:15] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-12 09:45:15] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-12 09:45:15] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-12 09:45:16] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-12 09:45:16] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-12 09:45:16] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 309925
+[2026-01-12 09:45:54] INFO [TelemetriaDelancer.views] Iniciando ejecución de todos los análisis del período 2025-12-13 a 2026-01-12
+[2026-01-12 09:45:54] INFO [TelemetriaDelancer.views] Ejecutando: summary
+[2026-01-12 09:45:55] INFO [TelemetriaDelancer.views] Ejecutando: channels
+[2026-01-12 09:45:55] INFO [TelemetriaDelancer.views] Ejecutando: users
+[2026-01-12 09:45:55] INFO [TelemetriaDelancer.views] Ejecutando: top_channels
+[2026-01-12 09:45:56] INFO [TelemetriaDelancer.views] Ejecutando: peak_hours
+[2026-01-12 09:45:56] INFO [TelemetriaDelancer.views] Ejecutando: average_duration
+[2026-01-12 09:45:56] INFO [TelemetriaDelancer.views] Ejecutando: time_slot_analysis
+[2026-01-12 09:45:56] INFO [TelemetriaDelancer.views] Ejecutando: channel_performance
+[2026-01-12 09:45:56] INFO [TelemetriaDelancer.views] Todos los análisis del período completados
+[2026-01-12 09:45:56] INFO [TelemetriaDelancer.views] Serialización completada exitosamente
+[2026-01-12 09:45:56] INFO [django.server] "POST /delancer/telemetry/period-analysis/ HTTP/1.1" 200 309925

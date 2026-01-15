@@ -12,9 +12,7 @@ from TelemetriaDelancer.panaccess.telemetry_fetcher import (
 )
 from TelemetriaDelancer.panaccess.ott_merger import merge_ott_records
 from TelemetriaDelancer.exceptions import PanAccessException
-from TelemetriaDelancer.mixins import CacheMixin
 from django.conf import settings
-from django.core.cache import cache
 from datetime import datetime, timedelta, date
 import json
 import math
@@ -265,7 +263,7 @@ class TelemetrySyncView(APIView):
             )
 
 
-class MergeOTTView(CacheMixin, APIView):
+class MergeOTTView(APIView):
     """
     Endpoint para fusionar registros OTT (actionId 7 y 8) en MergedTelemetricOTTDelancer.
     
@@ -273,8 +271,6 @@ class MergeOTTView(CacheMixin, APIView):
     Solo procesa registros nuevos desde el último recordId guardado.
     """
     permission_classes = [AllowAny]
-    cache_timeout = settings.CACHE_TIMEOUT_SHORT  # Cache corto para estado
-    cache_key_prefix = 'merge_ott_status'
     
     def post(self, request):
         """
@@ -356,7 +352,8 @@ class MergeOTTView(CacheMixin, APIView):
             }
         
         try:
-            return self.get_cached_response(request, _get_data)
+            data = _get_data(request)
+            return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
             logger.error(f"Error en GET merge OTT: {str(e)}", exc_info=True)
             return Response(
@@ -365,7 +362,7 @@ class MergeOTTView(CacheMixin, APIView):
             )
 
 
-class AnalyticsView(CacheMixin, APIView):
+class AnalyticsView(APIView):
     """
     Endpoint para análisis generales de telemetría OTT.
     
@@ -373,8 +370,6 @@ class AnalyticsView(CacheMixin, APIView):
     Ideal para dashboards que necesitan toda la información de una vez.
     """
     permission_classes = [AllowAny]
-    cache_timeout = settings.CACHE_TIMEOUT_ANALYTICS  # 30 minutos para análisis
-    cache_key_prefix = 'analytics'
     
     def get(self, request):
         """
@@ -384,25 +379,12 @@ class AnalyticsView(CacheMixin, APIView):
         - start_date: Fecha de inicio (formato: YYYY-MM-DD)
         - end_date: Fecha de fin (formato: YYYY-MM-DD)
         - limit: Límite de resultados para top_channels (default: 20)
-        - period: 'daily', 'weekly', 'monthly' (para temporal, default: 'daily')
-        - forecast_days: Días a pronosticar (para time_series, default: 7)
         - n_segments: Número de segmentos (para segmentation, default: 4)
         - include_pandas_analyses: Incluir análisis que requieren Pandas (default: true, valores: 'true', '1', 'yes')
-        - no_cache: Deshabilitar cache (ej: ?no_cache=1)
         
         Ejemplo:
         GET /delancer/telemetry/analytics/?start_date=2025-01-01&end_date=2025-01-31&limit=20&include_pandas_analyses=true
         """
-        # Verificar cache si está habilitado
-        use_cache = request.query_params.get('no_cache', '0') != '1'
-        if use_cache:
-            cache_key = self.get_cache_key(request)
-            cached_response = cache.get(cache_key)
-            if cached_response is not None:
-                logger.debug(f"Cache HIT para analytics: {cache_key}")
-                return Response(cached_response['data'], status=cached_response.get('status', 200))
-            logger.debug(f"Cache MISS para analytics: {cache_key}")
-        
         try:
             # Parsear fechas opcionales desde query params
             start_date = None
@@ -414,8 +396,6 @@ class AnalyticsView(CacheMixin, APIView):
             
             # Parámetros opcionales desde query params
             limit = int(request.query_params.get('limit', 20))
-            period = request.query_params.get('period', 'daily')
-            forecast_days = int(request.query_params.get('forecast_days', 7))
             n_segments = int(request.query_params.get('n_segments', 4))
             include_pandas = request.query_params.get('include_pandas_analyses', 'true')
             if isinstance(include_pandas, str):
@@ -427,10 +407,7 @@ class AnalyticsView(CacheMixin, APIView):
                 get_channel_audience,
                 get_peak_hours_by_channel,
                 get_average_duration_by_channel,
-                get_temporal_analysis,
-                get_geographic_analysis,
                 get_correlation_analysis,
-                get_time_series_analysis,
                 get_user_segmentation_analysis,
                 get_channel_performance_matrix,
                 get_general_summary,
@@ -505,27 +482,6 @@ class AnalyticsView(CacheMixin, APIView):
                 results["analyses"]["average_duration"] = {"error": str(e)}
             
             try:
-                logger.info("Ejecutando: temporal")
-                results["analyses"]["temporal"] = get_temporal_analysis(
-                    period=period,
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en temporal: {e}")
-                results["analyses"]["temporal"] = {"error": str(e)}
-            
-            try:
-                logger.info("Ejecutando: geographic")
-                results["analyses"]["geographic"] = get_geographic_analysis(
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en geographic: {e}")
-                results["analyses"]["geographic"] = {"error": str(e)}
-            
-            try:
                 logger.info("Ejecutando: time_slot_analysis")
                 results["analyses"]["time_slot_analysis"] = get_time_slot_analysis(
                     start_date=start_date,
@@ -552,24 +508,6 @@ class AnalyticsView(CacheMixin, APIView):
                 except Exception as e:
                     logger.error(f"Error en correlation: {e}")
                     results["analyses"]["correlation"] = {"error": str(e)}
-                
-                try:
-                    logger.info("Ejecutando: time_series")
-                    results["analyses"]["time_series"] = get_time_series_analysis(
-                        channel=None,
-                        start_date=start_date,
-                        end_date=end_date,
-                        forecast_days=forecast_days
-                    )
-                except ImportError as e:
-                    logger.warning(f"Pandas no disponible para time_series: {e}")
-                    results["analyses"]["time_series"] = {
-                        "error": "Pandas no está instalado",
-                        "hint": "Instala con: pip install pandas numpy"
-                    }
-                except Exception as e:
-                    logger.error(f"Error en time_series: {e}")
-                    results["analyses"]["time_series"] = {"error": str(e)}
                 
                 try:
                     logger.info("Ejecutando: segmentation")
@@ -605,7 +543,6 @@ class AnalyticsView(CacheMixin, APIView):
                     results["analyses"]["channel_performance"] = {"error": str(e)}
             else:
                 results["analyses"]["correlation"] = {"skipped": "include_pandas_analyses=False"}
-                results["analyses"]["time_series"] = {"skipped": "include_pandas_analyses=False"}
                 results["analyses"]["segmentation"] = {"skipped": "include_pandas_analyses=False"}
                 results["analyses"]["channel_performance"] = {"skipped": "include_pandas_analyses=False"}
             
@@ -617,21 +554,7 @@ class AnalyticsView(CacheMixin, APIView):
                 # Serializar resultados para JSON
                 serialized_results = _serialize_for_json(results)
                 logger.info("Serialización completada exitosamente")
-                response = Response(serialized_results, status=status.HTTP_200_OK)
-                
-                # Guardar en cache si está habilitado
-                if use_cache:
-                    try:
-                        cache_key = self.get_cache_key(request)
-                        cache.set(cache_key, {
-                            'data': serialized_results,
-                            'status': status.HTTP_200_OK
-                        }, timeout=self.cache_timeout)
-                        logger.debug(f"Resultados de analytics cacheados: {cache_key}")
-                    except Exception as e:
-                        logger.warning(f"Error al guardar en cache: {str(e)}")
-                
-                return response
+                return Response(serialized_results, status=status.HTTP_200_OK)
             except Exception as e:
                 logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
                 # Si falla la serialización, intentar con DRF directamente
@@ -677,23 +600,19 @@ class AnalyticsView(CacheMixin, APIView):
                     "start_date": "Fecha de inicio (YYYY-MM-DD) - Filtra análisis por fecha",
                     "end_date": "Fecha de fin (YYYY-MM-DD) - Filtra análisis por fecha",
                     "limit": "Límite de resultados para top_channels (default: 20)",
-                    "period": "Período para temporal: 'daily', 'weekly', 'monthly' (default: 'daily')",
-                    "forecast_days": "Días a pronosticar para time_series (default: 7)",
                     "n_segments": "Número de segmentos para segmentation (default: 4)",
-                    "include_pandas_analyses": "Incluir análisis que requieren Pandas (default: true, valores: 'true', '1', 'yes')",
-                    "no_cache": "Deshabilitar cache (ej: ?no_cache=1)"
+                    "include_pandas_analyses": "Incluir análisis que requieren Pandas (default: true, valores: 'true', '1', 'yes')"
                 },
                 "example": "GET /delancer/telemetry/analytics/?start_date=2025-01-01&end_date=2025-01-31&limit=20&include_pandas_analyses=true"
             },
             "analyses_included": {
+                "general_summary": "Resumen general con métricas principales",
                 "top_channels": "Top canales más vistos",
                 "channel_audience": "Audiencia por canal (dispositivos y usuarios únicos)",
                 "peak_hours": "Horarios pico por canal",
                 "average_duration": "Duración promedio por canal",
-                "temporal": "Análisis temporal (diario/semanal/mensual)",
-                "geographic": "Análisis geográfico por país e ISP",
+                "time_slot_analysis": "Análisis de consumo por franjas horarias",
                 "correlation": "Análisis de correlaciones entre variables (requiere Pandas)",
-                "time_series": "Análisis de series temporales con forecasting (requiere Pandas)",
                 "segmentation": "Segmentación de usuarios con clustering (requiere Pandas)",
                 "channel_performance": "Matriz de rendimiento de canales (requiere Pandas)"
             },
@@ -708,14 +627,13 @@ class AnalyticsView(CacheMixin, APIView):
                 "generated_at": "timestamp",
                 "filters": "filtros aplicados",
                 "analyses": {
+                    "general_summary": "...",
                     "top_channels": "...",
                     "channel_audience": "...",
                     "peak_hours": "...",
                     "average_duration": "...",
-                    "temporal": "...",
-                    "geographic": "...",
+                    "time_slot_analysis": "...",
                     "correlation": "...",
-                    "time_series": "...",
                     "segmentation": "...",
                     "channel_performance": "..."
                 }
@@ -723,7 +641,7 @@ class AnalyticsView(CacheMixin, APIView):
         }, status=status.HTTP_200_OK)
 
 
-class PeriodAnalysisView(CacheMixin, APIView):
+class PeriodAnalysisView(APIView):
     """
     Endpoint para análisis segmentados por rango de fechas.
     
@@ -731,8 +649,6 @@ class PeriodAnalysisView(CacheMixin, APIView):
     Ideal para dashboards que necesitan toda la información del período de una vez.
     """
     permission_classes = [AllowAny]
-    cache_timeout = settings.CACHE_TIMEOUT_ANALYTICS  # 30 minutos para análisis
-    cache_key_prefix = 'period_analysis'
     
     def post(self, request):
         """
@@ -743,24 +659,9 @@ class PeriodAnalysisView(CacheMixin, APIView):
         - end_date: Fecha de fin (formato: YYYY-MM-DD)
         
         Parámetros opcionales:
-        - breakdown: 'daily', 'weekly', 'monthly' (para temporal_breakdown, default: 'daily')
-        - top_n_channels: Número de canales top (default: 20)
-        - top_n_users: Número de usuarios top (default: 50)
-        - threshold_std: Desviaciones estándar para eventos (default: 2.0)
-        - include_comparison: Incluir comparación con período anterior (default: True)
+        - top_n_channels: Número de canales top para top_channels (default: 20)
         - include_pandas_analyses: Incluir análisis que requieren Pandas (default: True)
-        - no_cache: Deshabilitar cache (query param, ej: ?no_cache=1)
         """
-        # Verificar cache si está habilitado
-        use_cache = request.query_params.get('no_cache', '0') != '1'
-        if use_cache:
-            cache_key = self.get_cache_key(request)
-            cached_response = cache.get(cache_key)
-            if cached_response is not None:
-                logger.debug(f"Cache HIT para period_analysis: {cache_key}")
-                return Response(cached_response['data'], status=cached_response.get('status', 200))
-            logger.debug(f"Cache MISS para period_analysis: {cache_key}")
-        
         try:
             # Validar fechas requeridas
             start_date_str = request.data.get('start_date')
@@ -794,29 +695,25 @@ class PeriodAnalysisView(CacheMixin, APIView):
                 )
             
             # Parámetros opcionales
-            breakdown = request.data.get('breakdown', 'daily')
-            top_n_channels = int(request.data.get('top_n_channels', 20))
-            top_n_users = int(request.data.get('top_n_users', 50))
-            threshold_std = float(request.data.get('threshold_std', 2.0))
-            include_comparison = request.data.get('include_comparison', True)
+            top_n_channels = int(request.data.get('top_n_channels', 20))  # Solo para top_channels
             include_pandas = request.data.get('include_pandas_analyses', True)
             
-            if isinstance(include_comparison, str):
-                include_comparison = include_comparison.lower() in ('true', '1', 'yes')
             if isinstance(include_pandas, str):
                 include_pandas = include_pandas.lower() in ('true', '1', 'yes')
             
             # Importar funciones de análisis por período
             from TelemetriaDelancer.panaccess.analytics_date_range import (
                 get_period_summary,
-                get_period_comparison,
-                get_period_temporal_breakdown,
                 get_period_channel_analysis,
-                get_period_user_analysis,
-                get_period_events_analysis,
-                get_period_trend_analysis
+                get_period_user_analysis
             )
-            from TelemetriaDelancer.panaccess.analytics import get_time_slot_analysis
+            from TelemetriaDelancer.panaccess.analytics import (
+                get_time_slot_analysis,
+                get_top_channels,
+                get_peak_hours_by_channel,
+                get_average_duration_by_channel,
+                get_channel_performance_matrix
+            )
             
             logger.info(f"Iniciando ejecución de todos los análisis del período {start_date.date()} a {end_date.date()}")
             
@@ -840,46 +737,60 @@ class PeriodAnalysisView(CacheMixin, APIView):
                 logger.error(f"Error en summary: {e}")
                 results["analyses"]["summary"] = {"error": str(e)}
             
-            # Comparación con período anterior
-            if include_comparison:
-                try:
-                    logger.info("Ejecutando: comparison")
-                    results["analyses"]["comparison"] = get_period_comparison(start_date, end_date, compare_with_previous=True)
-                except Exception as e:
-                    logger.error(f"Error en comparison: {e}")
-                    results["analyses"]["comparison"] = {"error": str(e)}
-            else:
-                results["analyses"]["comparison"] = {"skipped": "include_comparison=False"}
-            
-            # Desglose temporal
-            try:
-                logger.info("Ejecutando: temporal_breakdown")
-                results["analyses"]["temporal_breakdown"] = get_period_temporal_breakdown(
-                    start_date, end_date, breakdown=breakdown
-                )
-            except Exception as e:
-                logger.error(f"Error en temporal_breakdown: {e}")
-                results["analyses"]["temporal_breakdown"] = {"error": str(e)}
-            
-            # Análisis de canales
+            # Análisis de canales (sin límite)
             try:
                 logger.info("Ejecutando: channels")
                 results["analyses"]["channels"] = get_period_channel_analysis(
-                    start_date, end_date, top_n=top_n_channels
+                    start_date, end_date, top_n=None
                 )
             except Exception as e:
                 logger.error(f"Error en channels: {e}")
                 results["analyses"]["channels"] = {"error": str(e)}
             
-            # Análisis de usuarios
+            # Análisis de usuarios (sin límite)
             try:
                 logger.info("Ejecutando: users")
                 results["analyses"]["users"] = get_period_user_analysis(
-                    start_date, end_date, top_n=top_n_users
+                    start_date, end_date, top_n=None
                 )
             except Exception as e:
                 logger.error(f"Error en users: {e}")
                 results["analyses"]["users"] = {"error": str(e)}
+            
+            # Top canales
+            try:
+                logger.info("Ejecutando: top_channels")
+                results["analyses"]["top_channels"] = get_top_channels(
+                    limit=top_n_channels,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except Exception as e:
+                logger.error(f"Error en top_channels: {e}")
+                results["analyses"]["top_channels"] = {"error": str(e)}
+            
+            # Horarios pico por canal
+            try:
+                logger.info("Ejecutando: peak_hours")
+                results["analyses"]["peak_hours"] = get_peak_hours_by_channel(
+                    channel=None,
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except Exception as e:
+                logger.error(f"Error en peak_hours: {e}")
+                results["analyses"]["peak_hours"] = {"error": str(e)}
+            
+            # Duración promedio por canal
+            try:
+                logger.info("Ejecutando: average_duration")
+                results["analyses"]["average_duration"] = get_average_duration_by_channel(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except Exception as e:
+                logger.error(f"Error en average_duration: {e}")
+                results["analyses"]["average_duration"] = {"error": str(e)}
             
             # Análisis de franjas horarias
             try:
@@ -895,35 +806,22 @@ class PeriodAnalysisView(CacheMixin, APIView):
             # Análisis avanzados (requieren Pandas)
             if include_pandas:
                 try:
-                    logger.info("Ejecutando: events")
-                    results["analyses"]["events"] = get_period_events_analysis(
-                        start_date, end_date, threshold_std=threshold_std
+                    logger.info("Ejecutando: channel_performance")
+                    results["analyses"]["channel_performance"] = get_channel_performance_matrix(
+                        start_date=start_date,
+                        end_date=end_date
                     )
                 except ImportError as e:
-                    logger.warning(f"Pandas no disponible para events: {e}")
-                    results["analyses"]["events"] = {
+                    logger.warning(f"Pandas no disponible para channel_performance: {e}")
+                    results["analyses"]["channel_performance"] = {
                         "error": "Pandas no está instalado",
                         "hint": "Instala con: pip install pandas numpy"
                     }
                 except Exception as e:
-                    logger.error(f"Error en events: {e}")
-                    results["analyses"]["events"] = {"error": str(e)}
-                
-                try:
-                    logger.info("Ejecutando: trend")
-                    results["analyses"]["trend"] = get_period_trend_analysis(start_date, end_date)
-                except ImportError as e:
-                    logger.warning(f"Pandas no disponible para trend: {e}")
-                    results["analyses"]["trend"] = {
-                        "error": "Pandas no está instalado",
-                        "hint": "Instala con: pip install pandas numpy"
-                    }
-                except Exception as e:
-                    logger.error(f"Error en trend: {e}")
-                    results["analyses"]["trend"] = {"error": str(e)}
+                    logger.error(f"Error en channel_performance: {e}")
+                    results["analyses"]["channel_performance"] = {"error": str(e)}
             else:
-                results["analyses"]["events"] = {"skipped": "include_pandas_analyses=False"}
-                results["analyses"]["trend"] = {"skipped": "include_pandas_analyses=False"}
+                results["analyses"]["channel_performance"] = {"skipped": "include_pandas_analyses=False"}
             
             logger.info("Todos los análisis del período completados")
             
@@ -933,21 +831,7 @@ class PeriodAnalysisView(CacheMixin, APIView):
                 # Serializar resultados para JSON
                 serialized_results = _serialize_for_json(results)
                 logger.info("Serialización completada exitosamente")
-                response = Response(serialized_results, status=status.HTTP_200_OK)
-                
-                # Guardar en cache si está habilitado
-                if use_cache:
-                    try:
-                        cache_key = self.get_cache_key(request)
-                        cache.set(cache_key, {
-                            'data': serialized_results,
-                            'status': status.HTTP_200_OK
-                        }, timeout=self.cache_timeout)
-                        logger.debug(f"Resultados de period_analysis cacheados: {cache_key}")
-                    except Exception as e:
-                        logger.warning(f"Error al guardar en cache: {str(e)}")
-                
-                return response
+                return Response(serialized_results, status=status.HTTP_200_OK)
             except Exception as e:
                 logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
                 # Si falla la serialización, intentar con DRF directamente
@@ -1014,30 +898,24 @@ class PeriodAnalysisView(CacheMixin, APIView):
                     "end_date": "Fecha de fin (YYYY-MM-DD) - OBLIGATORIO"
                 },
                 "optional_parameters": {
-                    "breakdown": "Para temporal_breakdown: 'daily', 'weekly', 'monthly' (default: 'daily')",
-                    "top_n_channels": "Número de canales top (default: 20)",
-                    "top_n_users": "Número de usuarios top (default: 50)",
-                    "threshold_std": "Desviaciones estándar para eventos (default: 2.0)",
-                    "include_comparison": "Incluir comparación con período anterior (default: true)",
+                    "top_n_channels": "Número de canales top para top_channels (default: 20)",
                     "include_pandas_analyses": "Incluir análisis que requieren Pandas (default: true)"
                 }
             },
             "analyses_included": {
                 "summary": "Resumen general del período (métricas principales)",
-                "comparison": "Comparación con período anterior equivalente",
-                "temporal_breakdown": "Desglose temporal día por día/semana/mes",
                 "channels": "Análisis detallado de canales en el período",
                 "users": "Análisis de comportamiento de usuarios en el período",
-                "events": "Detección de eventos y picos anómalos (requiere Pandas)",
-                "trend": "Análisis de tendencia dentro del período (requiere Pandas)"
+                "top_channels": "Top canales más vistos en el período",
+                "peak_hours": "Horarios pico por canal",
+                "average_duration": "Duración promedio por canal",
+                "time_slot_analysis": "Análisis de consumo por franjas horarias",
+                "channel_performance": "Matriz de rendimiento de canales (requiere Pandas)"
             },
             "example": {
                 "start_date": "2025-01-01",
                 "end_date": "2025-01-07",
-                "breakdown": "daily",
                 "top_n_channels": 20,
-                "top_n_users": 50,
-                "include_comparison": true,
                 "include_pandas_analyses": true
             },
             "response_structure": {
@@ -1050,13 +928,13 @@ class PeriodAnalysisView(CacheMixin, APIView):
                 },
                 "analyses": {
                     "summary": "...",
-                    "comparison": "...",
-                    "temporal_breakdown": "...",
                     "channels": "...",
                     "users": "...",
-                    "events": "...",
-                    "trend": "...",
-                    "time_slot_analysis": "..."
+                    "top_channels": "...",
+                    "peak_hours": "...",
+                    "average_duration": "...",
+                    "time_slot_analysis": "...",
+                    "channel_performance": "..."
                 }
             }
         }, status=status.HTTP_200_OK)
