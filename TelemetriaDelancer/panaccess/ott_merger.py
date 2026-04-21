@@ -22,7 +22,7 @@ def merge_ott_records(max_record_id: Optional[int] = None, batch_size: int = 500
     1. Obtiene el mapeo dataId -> dataName de actionId=7
     2. Obtiene registros actionId=8 nuevos (recordId > max_record_id)
     3. Fusiona el dataName de actionId=7 a actionId=8 cuando comparten dataId
-    4. Guarda los registros fusionados en MergedTelemetricOTTDelancer
+    4. Guarda los registros fusionados en MergedTelemetricOTT
     
     Args:
         max_record_id: RecordId máximo ya procesado (None = procesar todos)

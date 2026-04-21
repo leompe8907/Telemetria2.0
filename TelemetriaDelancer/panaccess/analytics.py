@@ -40,6 +40,8 @@ from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, Extract
 from django.db import connection
 
 from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
+from TelemetriaDelancer.utils.cache_utils import cached_result
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +63,7 @@ def _check_pandas():
 # ANÁLISIS DE CONSUMO POR CANAL (Django ORM - Optimizado)
 # ============================================================================
 
+@cached_result(timeout=settings.CACHE_TIMEOUT_ANALYTICS, key_prefix='analytics_top_channels')
 def get_top_channels(limit: int = 10, start_date: Optional[datetime] = None, 
                      end_date: Optional[datetime] = None) -> List[Dict[str, Any]]:
     """

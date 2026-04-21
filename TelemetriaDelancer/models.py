@@ -69,6 +69,12 @@ class MergedTelemetricOTTDelancer(TelemetryBase):
             models.Index(fields=['dataName']),  # Para agrupaciones por canal
             models.Index(fields=['deviceId', 'dataDate']),  # Para análisis por dispositivo
             models.Index(fields=['recordId']),
+            # Índices compuestos optimizados para consultas frecuentes
+            models.Index(fields=['subscriberCode', 'dataDate']),  # Para análisis de usuarios por fecha
+            models.Index(fields=['dataDate', 'dataName']),  # Para análisis por canal y fecha
+            models.Index(fields=['dataDate', 'subscriberCode', 'dataName']),  # Consultas complejas
+            models.Index(fields=['timestamp', 'dataDate']),  # Para filtros temporales
+            models.Index(fields=['dataDate', 'dataDuration']),  # Para análisis de duración por fecha
         ]
 
 

@@ -113,32 +113,33 @@ TEMPLATES = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # SQLite
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 # ============================================================================
 # CONFIGURACIÓN DE BASE DE DATOS (MariaDB/MySQL)
 # ============================================================================
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': MariaConfig.Maria_NAME, 
-        'USER': MariaConfig.Maria_USER,
-        'PASSWORD': MariaConfig.Maria_PASSWORD,
-        'HOST': MariaConfig.Maria_HOST,
-        'PORT': MariaConfig.Maria_PORT,
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-        # Optimizaciones para mejor rendimiento con carga alta
-        'CONN_MAX_AGE': 1000,  # Mantener conexiones vivas por 5 minutos (reducir overhead)
-        'AUTOCOMMIT': True,
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': MariaConfig.Maria_NAME, 
+#         'USER': MariaConfig.Maria_USER,
+#         'PASSWORD': MariaConfig.Maria_PASSWORD,
+#         'HOST': MariaConfig.Maria_HOST,
+#         'PORT': MariaConfig.Maria_PORT,
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#             'charset': 'utf8mb4',
+#         },
+#         # Optimizaciones para mejor rendimiento con carga alta
+#         'CONN_MAX_AGE': 600,  # Mantener conexiones vivas por 10 minutos (reducir overhead)
+#         'AUTOCOMMIT': True,
+#     }
+# }
 
 
 # Password validation

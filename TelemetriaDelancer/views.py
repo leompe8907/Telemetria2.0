@@ -12,6 +12,7 @@ from TelemetriaDelancer.panaccess.telemetry_fetcher import (
 )
 from TelemetriaDelancer.panaccess.ott_merger import merge_ott_records
 from TelemetriaDelancer.exceptions import PanAccessException
+from TelemetriaDelancer.mixins import CacheMixin
 from django.conf import settings
 from datetime import datetime, timedelta, date
 import json
@@ -362,7 +363,7 @@ class MergeOTTView(APIView):
             )
 
 
-class AnalyticsView(APIView):
+class AnalyticsView(CacheMixin, APIView):
     """
     Endpoint para análisis generales de telemetría OTT.
     
@@ -370,220 +371,190 @@ class AnalyticsView(APIView):
     Ideal para dashboards que necesitan toda la información de una vez.
     """
     permission_classes = [AllowAny]
+    cache_timeout = settings.CACHE_TIMEOUT_ANALYTICS  # 30 minutos
+    cache_key_prefix = 'analytics'
     
     def get(self, request):
+        """GET: Ejecuta TODOS los análisis generales con caché."""
+        return self.get_cached_response(request, self._get_analytics_data)
+    
+    def _get_analytics_data(self, request):
         """
-        GET: Ejecuta TODOS los análisis generales.
-        
-        Query parameters opcionales:
-        - start_date: Fecha de inicio (formato: YYYY-MM-DD)
-        - end_date: Fecha de fin (formato: YYYY-MM-DD)
-        - limit: Límite de resultados para top_channels (default: 20)
-        - n_segments: Número de segmentos (para segmentation, default: 4)
-        - include_pandas_analyses: Incluir análisis que requieren Pandas (default: true, valores: 'true', '1', 'yes')
-        
-        Ejemplo:
-        GET /delancer/telemetry/analytics/?start_date=2025-01-01&end_date=2025-01-31&limit=20&include_pandas_analyses=true
+        Método interno que contiene la lógica de análisis.
+        Este método se cachea automáticamente.
+        Retorna un diccionario con los resultados (no Response).
         """
+        # Parsear fechas opcionales desde query params
+        start_date = None
+        end_date = None
+        if request.query_params.get('start_date'):
+            start_date = datetime.fromisoformat(request.query_params.get('start_date'))
+        if request.query_params.get('end_date'):
+            end_date = datetime.fromisoformat(request.query_params.get('end_date'))
+        
+        # Parámetros opcionales desde query params
+        limit = int(request.query_params.get('limit', 20))
+        n_segments = int(request.query_params.get('n_segments', 4))
+        include_pandas = request.query_params.get('include_pandas_analyses', 'true')
+        if isinstance(include_pandas, str):
+            include_pandas = include_pandas.lower() in ('true', '1', 'yes')
+        
+        # Importar funciones de análisis
+        from TelemetriaDelancer.panaccess.analytics import (
+            get_top_channels,
+            get_channel_audience,
+            get_peak_hours_by_channel,
+            get_average_duration_by_channel,
+            get_correlation_analysis,
+            get_user_segmentation_analysis,
+            get_channel_performance_matrix,
+            get_general_summary,
+            get_time_slot_analysis
+        )
+        
+        logger.info("Iniciando ejecución de todos los análisis generales")
+        
+        # Ejecutar TODOS los análisis
+        results = {
+            "success": True,
+            "generated_at": datetime.now().isoformat(),
+            "filters": {
+                "start_date": start_date.date().isoformat() if start_date else None,
+                "end_date": end_date.date().isoformat() if end_date else None
+            },
+            "analyses": {}
+        }
+        
+        # Resumen general (métricas principales)
         try:
-            # Parsear fechas opcionales desde query params
-            start_date = None
-            end_date = None
-            if request.query_params.get('start_date'):
-                start_date = datetime.fromisoformat(request.query_params.get('start_date'))
-            if request.query_params.get('end_date'):
-                end_date = datetime.fromisoformat(request.query_params.get('end_date'))
-            
-            # Parámetros opcionales desde query params
-            limit = int(request.query_params.get('limit', 20))
-            n_segments = int(request.query_params.get('n_segments', 4))
-            include_pandas = request.query_params.get('include_pandas_analyses', 'true')
-            if isinstance(include_pandas, str):
-                include_pandas = include_pandas.lower() in ('true', '1', 'yes')
-            
-            # Importar funciones de análisis
-            from TelemetriaDelancer.panaccess.analytics import (
-                get_top_channels,
-                get_channel_audience,
-                get_peak_hours_by_channel,
-                get_average_duration_by_channel,
-                get_correlation_analysis,
-                get_user_segmentation_analysis,
-                get_channel_performance_matrix,
-                get_general_summary,
-                get_time_slot_analysis
+            logger.info("Ejecutando: general_summary")
+            results["analyses"]["general_summary"] = get_general_summary(
+                start_date=start_date,
+                end_date=end_date
             )
-            
-            logger.info("Iniciando ejecución de todos los análisis generales")
-            
-            # Ejecutar TODOS los análisis
-            results = {
-                "success": True,
-                "generated_at": datetime.now().isoformat(),
-                "filters": {
-                    "start_date": start_date.date().isoformat() if start_date else None,
-                    "end_date": end_date.date().isoformat() if end_date else None
-                },
-                "analyses": {}
-            }
-            
-            # Resumen general (métricas principales)
-            try:
-                logger.info("Ejecutando: general_summary")
-                results["analyses"]["general_summary"] = get_general_summary(
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en general_summary: {e}")
-                results["analyses"]["general_summary"] = {"error": str(e)}
-            
-            # Análisis básicos (siempre disponibles)
-            try:
-                logger.info("Ejecutando: top_channels")
-                results["analyses"]["top_channels"] = get_top_channels(
-                    limit=limit,
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en top_channels: {e}")
-                results["analyses"]["top_channels"] = {"error": str(e)}
-            
-            try:
-                logger.info("Ejecutando: channel_audience")
-                results["analyses"]["channel_audience"] = get_channel_audience(
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en channel_audience: {e}")
-                results["analyses"]["channel_audience"] = {"error": str(e)}
-            
-            try:
-                logger.info("Ejecutando: peak_hours")
-                results["analyses"]["peak_hours"] = get_peak_hours_by_channel(
-                    channel=None,
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en peak_hours: {e}")
-                results["analyses"]["peak_hours"] = {"error": str(e)}
-            
-            try:
-                logger.info("Ejecutando: average_duration")
-                results["analyses"]["average_duration"] = get_average_duration_by_channel(
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en average_duration: {e}")
-                results["analyses"]["average_duration"] = {"error": str(e)}
-            
-            try:
-                logger.info("Ejecutando: time_slot_analysis")
-                results["analyses"]["time_slot_analysis"] = get_time_slot_analysis(
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en time_slot_analysis: {e}")
-                results["analyses"]["time_slot_analysis"] = {"error": str(e)}
-            
-            # Análisis avanzados (requieren Pandas)
-            if include_pandas:
-                try:
-                    logger.info("Ejecutando: correlation")
-                    results["analyses"]["correlation"] = get_correlation_analysis(
-                        start_date=start_date,
-                        end_date=end_date
-                    )
-                except ImportError as e:
-                    logger.warning(f"Pandas no disponible para correlation: {e}")
-                    results["analyses"]["correlation"] = {
-                        "error": "Pandas no está instalado",
-                        "hint": "Instala con: pip install pandas numpy"
-                    }
-                except Exception as e:
-                    logger.error(f"Error en correlation: {e}")
-                    results["analyses"]["correlation"] = {"error": str(e)}
-                
-                try:
-                    logger.info("Ejecutando: segmentation")
-                    results["analyses"]["segmentation"] = get_user_segmentation_analysis(
-                        start_date=start_date,
-                        end_date=end_date,
-                        n_segments=n_segments
-                    )
-                except ImportError as e:
-                    logger.warning(f"Pandas no disponible para segmentation: {e}")
-                    results["analyses"]["segmentation"] = {
-                        "error": "Pandas no está instalado",
-                        "hint": "Instala con: pip install pandas numpy"
-                    }
-                except Exception as e:
-                    logger.error(f"Error en segmentation: {e}")
-                    results["analyses"]["segmentation"] = {"error": str(e)}
-                
-                try:
-                    logger.info("Ejecutando: channel_performance")
-                    results["analyses"]["channel_performance"] = get_channel_performance_matrix(
-                        start_date=start_date,
-                        end_date=end_date
-                    )
-                except ImportError as e:
-                    logger.warning(f"Pandas no disponible para channel_performance: {e}")
-                    results["analyses"]["channel_performance"] = {
-                        "error": "Pandas no está instalado",
-                        "hint": "Instala con: pip install pandas numpy"
-                    }
-                except Exception as e:
-                    logger.error(f"Error en channel_performance: {e}")
-                    results["analyses"]["channel_performance"] = {"error": str(e)}
-            else:
-                results["analyses"]["correlation"] = {"skipped": "include_pandas_analyses=False"}
-                results["analyses"]["segmentation"] = {"skipped": "include_pandas_analyses=False"}
-                results["analyses"]["channel_performance"] = {"skipped": "include_pandas_analyses=False"}
-            
-            logger.info("Todos los análisis generales completados")
-            
-            # DRF Response maneja la serialización automáticamente, pero necesitamos
-            # asegurarnos de que todos los tipos sean serializables
-            try:
-                # Serializar resultados para JSON
-                serialized_results = _serialize_for_json(results)
-                logger.info("Serialización completada exitosamente")
-                return Response(serialized_results, status=status.HTTP_200_OK)
-            except Exception as e:
-                logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
-                # Si falla la serialización, intentar con DRF directamente
-                # DRF puede manejar algunos tipos automáticamente
-                try:
-                    return Response(results, status=status.HTTP_200_OK)
-                except Exception as e2:
-                    logger.error(f"Error crítico en serialización con DRF: {str(e2)}", exc_info=True)
-                    # Último recurso: retornar solo un mensaje de error
-                    return Response(
-                        {
-                            "success": False,
-                            "error": "Error al serializar resultados",
-                            "message": str(e2),
-                            "hint": "Algunos datos no son serializables a JSON. Revisa los logs para más detalles."
-                        },
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
-            
         except Exception as e:
-            logger.error(f"Error inesperado en análisis generales: {str(e)}", exc_info=True)
-            return Response(
-                {
-                    "success": False,
-                    "error": "Error inesperado",
-                    "message": str(e)
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            logger.error(f"Error en general_summary: {e}")
+            results["analyses"]["general_summary"] = {"error": str(e)}
+        
+        # Análisis básicos (siempre disponibles)
+        try:
+            logger.info("Ejecutando: top_channels")
+            results["analyses"]["top_channels"] = get_top_channels(
+                limit=limit,
+                start_date=start_date,
+                end_date=end_date
             )
+        except Exception as e:
+            logger.error(f"Error en top_channels: {e}")
+            results["analyses"]["top_channels"] = {"error": str(e)}
+        
+        try:
+            logger.info("Ejecutando: channel_audience")
+            results["analyses"]["channel_audience"] = get_channel_audience(
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en channel_audience: {e}")
+            results["analyses"]["channel_audience"] = {"error": str(e)}
+        
+        try:
+            logger.info("Ejecutando: peak_hours")
+            results["analyses"]["peak_hours"] = get_peak_hours_by_channel(
+                channel=None,
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en peak_hours: {e}")
+            results["analyses"]["peak_hours"] = {"error": str(e)}
+        
+        try:
+            logger.info("Ejecutando: average_duration")
+            results["analyses"]["average_duration"] = get_average_duration_by_channel(
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en average_duration: {e}")
+            results["analyses"]["average_duration"] = {"error": str(e)}
+        
+        try:
+            logger.info("Ejecutando: time_slot_analysis")
+            results["analyses"]["time_slot_analysis"] = get_time_slot_analysis(
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en time_slot_analysis: {e}")
+            results["analyses"]["time_slot_analysis"] = {"error": str(e)}
+        
+        # Análisis avanzados (requieren Pandas)
+        if include_pandas:
+            try:
+                logger.info("Ejecutando: correlation")
+                results["analyses"]["correlation"] = get_correlation_analysis(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except ImportError as e:
+                logger.warning(f"Pandas no disponible para correlation: {e}")
+                results["analyses"]["correlation"] = {
+                    "error": "Pandas no está instalado",
+                    "hint": "Instala con: pip install pandas numpy"
+                }
+            except Exception as e:
+                logger.error(f"Error en correlation: {e}")
+                results["analyses"]["correlation"] = {"error": str(e)}
+            
+            try:
+                logger.info("Ejecutando: segmentation")
+                results["analyses"]["segmentation"] = get_user_segmentation_analysis(
+                    start_date=start_date,
+                    end_date=end_date,
+                    n_segments=n_segments
+                )
+            except ImportError as e:
+                logger.warning(f"Pandas no disponible para segmentation: {e}")
+                results["analyses"]["segmentation"] = {
+                    "error": "Pandas no está instalado",
+                    "hint": "Instala con: pip install pandas numpy"
+                }
+            except Exception as e:
+                logger.error(f"Error en segmentation: {e}")
+                results["analyses"]["segmentation"] = {"error": str(e)}
+            
+            try:
+                logger.info("Ejecutando: channel_performance")
+                results["analyses"]["channel_performance"] = get_channel_performance_matrix(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except ImportError as e:
+                logger.warning(f"Pandas no disponible para channel_performance: {e}")
+                results["analyses"]["channel_performance"] = {
+                    "error": "Pandas no está instalado",
+                    "hint": "Instala con: pip install pandas numpy"
+                }
+            except Exception as e:
+                logger.error(f"Error en channel_performance: {e}")
+                results["analyses"]["channel_performance"] = {"error": str(e)}
+        else:
+            results["analyses"]["correlation"] = {"skipped": "include_pandas_analyses=False"}
+            results["analyses"]["segmentation"] = {"skipped": "include_pandas_analyses=False"}
+            results["analyses"]["channel_performance"] = {"skipped": "include_pandas_analyses=False"}
+        
+        logger.info("Todos los análisis generales completados")
+        
+        # Serializar resultados para JSON
+        try:
+            serialized_results = _serialize_for_json(results)
+            logger.info("Serialización completada exitosamente")
+            return serialized_results
+        except Exception as e:
+            logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
+            # Si falla la serialización, retornar resultados sin serializar
+            return results
     
     def post(self, request):
         """
@@ -620,7 +591,7 @@ class AnalyticsView(APIView):
                 "start_date": "2025-01-01",
                 "end_date": "2025-01-31",
                 "limit": 20,
-                "include_pandas_analyses": true
+                "include_pandas_analyses": True
             },
             "response_structure": {
                 "success": "boolean",
@@ -641,7 +612,7 @@ class AnalyticsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class PeriodAnalysisView(APIView):
+class PeriodAnalysisView(CacheMixin, APIView):
     """
     Endpoint para análisis segmentados por rango de fechas.
     
@@ -649,230 +620,18 @@ class PeriodAnalysisView(APIView):
     Ideal para dashboards que necesitan toda la información del período de una vez.
     """
     permission_classes = [AllowAny]
+    cache_timeout = settings.CACHE_TIMEOUT_ANALYTICS  # 30 minutos
+    cache_key_prefix = 'period_analysis'
     
     def post(self, request):
-        """
-        POST: Ejecuta TODOS los análisis del período específico.
-        
-        Parámetros requeridos:
-        - start_date: Fecha de inicio (formato: YYYY-MM-DD)
-        - end_date: Fecha de fin (formato: YYYY-MM-DD)
-        
-        Parámetros opcionales:
-        - top_n_channels: Número de canales top para top_channels (default: 20)
-        - include_pandas_analyses: Incluir análisis que requieren Pandas (default: True)
-        """
+        """POST: Ejecuta TODOS los análisis del período con caché."""
         try:
-            # Validar fechas requeridas
-            start_date_str = request.data.get('start_date')
-            end_date_str = request.data.get('end_date')
-            
-            if not start_date_str or not end_date_str:
-                return Response(
-                    {
-                        "error": "start_date y end_date son requeridos",
-                        "format": "YYYY-MM-DD",
-                        "example": {
-                            "start_date": "2025-01-01",
-                            "end_date": "2025-01-07"
-                        }
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            try:
-                start_date = datetime.fromisoformat(start_date_str)
-                end_date = datetime.fromisoformat(end_date_str)
-            except ValueError as e:
-                return Response(
-                    {
-                        "error": "Formato de fecha inválido",
-                        "message": str(e),
-                        "format": "YYYY-MM-DD",
-                        "example": "2025-01-01"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # Parámetros opcionales
-            top_n_channels = int(request.data.get('top_n_channels', 20))  # Solo para top_channels
-            include_pandas = request.data.get('include_pandas_analyses', True)
-            
-            if isinstance(include_pandas, str):
-                include_pandas = include_pandas.lower() in ('true', '1', 'yes')
-            
-            # Importar funciones de análisis por período
-            from TelemetriaDelancer.panaccess.analytics_date_range import (
-                get_period_summary,
-                get_period_channel_analysis,
-                get_period_user_analysis
-            )
-            from TelemetriaDelancer.panaccess.analytics import (
-                get_time_slot_analysis,
-                get_top_channels,
-                get_peak_hours_by_channel,
-                get_average_duration_by_channel,
-                get_channel_performance_matrix
-            )
-            
-            logger.info(f"Iniciando ejecución de todos los análisis del período {start_date.date()} a {end_date.date()}")
-            
-            # Ejecutar TODOS los análisis
-            results = {
-                "success": True,
-                "generated_at": datetime.now().isoformat(),
-                "period": {
-                    "start_date": start_date.date().isoformat(),
-                    "end_date": end_date.date().isoformat(),
-                    "days": (end_date.date() - start_date.date()).days + 1
-                },
-                "analyses": {}
-            }
-            
-            # Resumen general
-            try:
-                logger.info("Ejecutando: summary")
-                results["analyses"]["summary"] = get_period_summary(start_date, end_date)
-            except Exception as e:
-                logger.error(f"Error en summary: {e}")
-                results["analyses"]["summary"] = {"error": str(e)}
-            
-            # Análisis de canales (sin límite)
-            try:
-                logger.info("Ejecutando: channels")
-                results["analyses"]["channels"] = get_period_channel_analysis(
-                    start_date, end_date, top_n=None
-                )
-            except Exception as e:
-                logger.error(f"Error en channels: {e}")
-                results["analyses"]["channels"] = {"error": str(e)}
-            
-            # Análisis de usuarios (sin límite)
-            try:
-                logger.info("Ejecutando: users")
-                results["analyses"]["users"] = get_period_user_analysis(
-                    start_date, end_date, top_n=None
-                )
-            except Exception as e:
-                logger.error(f"Error en users: {e}")
-                results["analyses"]["users"] = {"error": str(e)}
-            
-            # Top canales
-            try:
-                logger.info("Ejecutando: top_channels")
-                results["analyses"]["top_channels"] = get_top_channels(
-                    limit=top_n_channels,
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en top_channels: {e}")
-                results["analyses"]["top_channels"] = {"error": str(e)}
-            
-            # Horarios pico por canal
-            try:
-                logger.info("Ejecutando: peak_hours")
-                results["analyses"]["peak_hours"] = get_peak_hours_by_channel(
-                    channel=None,
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en peak_hours: {e}")
-                results["analyses"]["peak_hours"] = {"error": str(e)}
-            
-            # Duración promedio por canal
-            try:
-                logger.info("Ejecutando: average_duration")
-                results["analyses"]["average_duration"] = get_average_duration_by_channel(
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en average_duration: {e}")
-                results["analyses"]["average_duration"] = {"error": str(e)}
-            
-            # Análisis de franjas horarias
-            try:
-                logger.info("Ejecutando: time_slot_analysis")
-                results["analyses"]["time_slot_analysis"] = get_time_slot_analysis(
-                    start_date=start_date,
-                    end_date=end_date
-                )
-            except Exception as e:
-                logger.error(f"Error en time_slot_analysis: {e}")
-                results["analyses"]["time_slot_analysis"] = {"error": str(e)}
-            
-            # Análisis avanzados (requieren Pandas)
-            if include_pandas:
-                try:
-                    logger.info("Ejecutando: channel_performance")
-                    results["analyses"]["channel_performance"] = get_channel_performance_matrix(
-                        start_date=start_date,
-                        end_date=end_date
-                    )
-                except ImportError as e:
-                    logger.warning(f"Pandas no disponible para channel_performance: {e}")
-                    results["analyses"]["channel_performance"] = {
-                        "error": "Pandas no está instalado",
-                        "hint": "Instala con: pip install pandas numpy"
-                    }
-                except Exception as e:
-                    logger.error(f"Error en channel_performance: {e}")
-                    results["analyses"]["channel_performance"] = {"error": str(e)}
-            else:
-                results["analyses"]["channel_performance"] = {"skipped": "include_pandas_analyses=False"}
-            
-            logger.info("Todos los análisis del período completados")
-            
-            # DRF Response maneja la serialización automáticamente, pero necesitamos
-            # asegurarnos de que todos los tipos sean serializables
-            try:
-                # Serializar resultados para JSON
-                serialized_results = _serialize_for_json(results)
-                logger.info("Serialización completada exitosamente")
-                return Response(serialized_results, status=status.HTTP_200_OK)
-            except Exception as e:
-                logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
-                # Si falla la serialización, intentar con DRF directamente
-                # DRF puede manejar algunos tipos automáticamente
-                try:
-                    return Response(results, status=status.HTTP_200_OK)
-                except Exception as e2:
-                    logger.error(f"Error crítico en serialización con DRF: {str(e2)}", exc_info=True)
-                    # Último recurso: retornar solo un mensaje de error
-                    return Response(
-                        {
-                            "success": False,
-                            "error": "Error al serializar resultados",
-                            "message": str(e2),
-                            "hint": "Algunos datos no son serializables a JSON. Revisa los logs para más detalles."
-                        },
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
-            
-        except ValueError as e:
-            logger.error(f"Error de validación: {str(e)}")
-            return Response(
-                {
-                    "success": False,
-                    "error": "Error de validación",
-                    "message": str(e)
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except ImportError as e:
-            logger.error(f"Error de importación: {str(e)}")
-            return Response(
-                {
-                    "success": False,
-                    "error": "Dependencias faltantes",
-                    "message": str(e),
-                    "hint": "Algunos análisis requieren pandas y numpy. Instala con: pip install pandas numpy"
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return self.get_cached_response(request, self._get_period_analysis_data)
         except Exception as e:
+            # Manejar errores de validación y otros
+            from rest_framework.exceptions import ValidationError
+            if isinstance(e, ValidationError):
+                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
             logger.error(f"Error en análisis de período: {str(e)}", exc_info=True)
             return Response(
                 {
@@ -882,6 +641,180 @@ class PeriodAnalysisView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    def _get_period_analysis_data(self, request):
+        """
+        Método interno que contiene la lógica de análisis por período.
+        Este método se cachea automáticamente.
+        Retorna un diccionario con los resultados (no Response).
+        """
+        # Validar fechas requeridas
+        start_date_str = request.data.get('start_date')
+        end_date_str = request.data.get('end_date')
+        
+        if not start_date_str or not end_date_str:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({
+                "error": "start_date y end_date son requeridos",
+                "format": "YYYY-MM-DD",
+                "example": {
+                    "start_date": "2025-01-01",
+                    "end_date": "2025-01-07"
+                }
+            })
+        
+        try:
+            start_date = datetime.fromisoformat(start_date_str)
+            end_date = datetime.fromisoformat(end_date_str)
+        except ValueError as e:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({
+                "error": "Formato de fecha inválido",
+                "message": str(e),
+                "format": "YYYY-MM-DD",
+                "example": "2025-01-01"
+            })
+        
+        # Parámetros opcionales
+        top_n_channels = int(request.data.get('top_n_channels', 20))  # Solo para top_channels
+        include_pandas = request.data.get('include_pandas_analyses', True)
+        
+        if isinstance(include_pandas, str):
+            include_pandas = include_pandas.lower() in ('true', '1', 'yes')
+        
+        # Importar funciones de análisis por período
+        from TelemetriaDelancer.panaccess.analytics_date_range import (
+            get_period_summary,
+            get_period_channel_analysis,
+            get_period_user_analysis
+        )
+        from TelemetriaDelancer.panaccess.analytics import (
+            get_time_slot_analysis,
+            get_top_channels,
+            get_peak_hours_by_channel,
+            get_average_duration_by_channel,
+            get_channel_performance_matrix
+        )
+        
+        logger.info(f"Iniciando ejecución de todos los análisis del período {start_date.date()} a {end_date.date()}")
+        
+        # Ejecutar TODOS los análisis
+        results = {
+            "success": True,
+            "generated_at": datetime.now().isoformat(),
+            "period": {
+                "start_date": start_date.date().isoformat(),
+                "end_date": end_date.date().isoformat(),
+                "days": (end_date.date() - start_date.date()).days + 1
+            },
+            "analyses": {}
+        }
+        
+        # Resumen general
+        try:
+            logger.info("Ejecutando: summary")
+            results["analyses"]["summary"] = get_period_summary(start_date, end_date)
+        except Exception as e:
+            logger.error(f"Error en summary: {e}")
+            results["analyses"]["summary"] = {"error": str(e)}
+        
+        # Análisis de canales (sin límite)
+        try:
+            logger.info("Ejecutando: channels")
+            results["analyses"]["channels"] = get_period_channel_analysis(
+                start_date, end_date, top_n=None
+            )
+        except Exception as e:
+            logger.error(f"Error en channels: {e}")
+            results["analyses"]["channels"] = {"error": str(e)}
+        
+        # Análisis de usuarios (sin límite)
+        try:
+            logger.info("Ejecutando: users")
+            results["analyses"]["users"] = get_period_user_analysis(
+                start_date, end_date, top_n=None
+            )
+        except Exception as e:
+            logger.error(f"Error en users: {e}")
+            results["analyses"]["users"] = {"error": str(e)}
+        
+        # Top canales
+        try:
+            logger.info("Ejecutando: top_channels")
+            results["analyses"]["top_channels"] = get_top_channels(
+                limit=top_n_channels,
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en top_channels: {e}")
+            results["analyses"]["top_channels"] = {"error": str(e)}
+        
+        # Horarios pico por canal
+        try:
+            logger.info("Ejecutando: peak_hours")
+            results["analyses"]["peak_hours"] = get_peak_hours_by_channel(
+                channel=None,
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en peak_hours: {e}")
+            results["analyses"]["peak_hours"] = {"error": str(e)}
+        
+        # Duración promedio por canal
+        try:
+            logger.info("Ejecutando: average_duration")
+            results["analyses"]["average_duration"] = get_average_duration_by_channel(
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en average_duration: {e}")
+            results["analyses"]["average_duration"] = {"error": str(e)}
+        
+        # Análisis de franjas horarias
+        try:
+            logger.info("Ejecutando: time_slot_analysis")
+            results["analyses"]["time_slot_analysis"] = get_time_slot_analysis(
+                start_date=start_date,
+                end_date=end_date
+            )
+        except Exception as e:
+            logger.error(f"Error en time_slot_analysis: {e}")
+            results["analyses"]["time_slot_analysis"] = {"error": str(e)}
+        
+        # Análisis avanzados (requieren Pandas)
+        if include_pandas:
+            try:
+                logger.info("Ejecutando: channel_performance")
+                results["analyses"]["channel_performance"] = get_channel_performance_matrix(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+            except ImportError as e:
+                logger.warning(f"Pandas no disponible para channel_performance: {e}")
+                results["analyses"]["channel_performance"] = {
+                    "error": "Pandas no está instalado",
+                    "hint": "Instala con: pip install pandas numpy"
+                }
+            except Exception as e:
+                logger.error(f"Error en channel_performance: {e}")
+                results["analyses"]["channel_performance"] = {"error": str(e)}
+        else:
+            results["analyses"]["channel_performance"] = {"skipped": "include_pandas_analyses=False"}
+        
+        logger.info("Todos los análisis del período completados")
+        
+        # Serializar resultados para JSON
+        try:
+            serialized_results = _serialize_for_json(results)
+            logger.info("Serialización completada exitosamente")
+            return serialized_results
+        except Exception as e:
+            logger.error(f"Error al serializar resultados: {str(e)}", exc_info=True)
+            # Si falla la serialización, retornar resultados sin serializar
+            return results
     
     def get(self, request):
         """
@@ -916,7 +849,7 @@ class PeriodAnalysisView(APIView):
                 "start_date": "2025-01-01",
                 "end_date": "2025-01-07",
                 "top_n_channels": 20,
-                "include_pandas_analyses": true
+                "include_pandas_analyses": True
             },
             "response_structure": {
                 "success": "boolean",

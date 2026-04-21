@@ -37,6 +37,8 @@ from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, Extract
 from django.db import connection
 
 from TelemetriaDelancer.models import MergedTelemetricOTTDelancer
+from TelemetriaDelancer.utils.cache_utils import cached_result
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,7 @@ def _validate_date_range(start_date: datetime, end_date: datetime):
 # ANÁLISIS GENERAL DEL PERÍODO
 # ============================================================================
 
+@cached_result(timeout=settings.CACHE_TIMEOUT_ANALYTICS, key_prefix='period_summary')
 def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, Any]:
     """
     Resumen general del período seleccionado.
@@ -92,21 +95,32 @@ def get_period_summary(start_date: datetime, end_date: datetime) -> Dict[str, An
         dataDate__gte=start_date.date(),
         dataDate__lte=end_date.date(),
         dataDuration__isnull=False
-    )
+    ).only('dataDate', 'dataDuration', 'subscriberCode', 'deviceId', 'dataName')
     
-    # Métricas generales
-    total_views = queryset.count()
-    unique_users = queryset.values('subscriberCode').distinct().count()
-    unique_devices = queryset.values('deviceId').distinct().count()
-    unique_channels = queryset.filter(dataName__isnull=False).values('dataName').distinct().count()
-    
-    # Métricas de tiempo
-    duration_stats = queryset.aggregate(
+    # Métricas generales - OPTIMIZADO: una sola query con aggregate en lugar de múltiples count()
+    from django.db.models import Q
+    stats = queryset.aggregate(
+        total_views=Count('id'),
+        unique_users=Count('subscriberCode', distinct=True),
+        unique_devices=Count('deviceId', distinct=True),
+        unique_channels=Count('dataName', distinct=True, filter=Q(dataName__isnull=False)),
         total_watch_time=Sum('dataDuration'),
         avg_duration=Avg('dataDuration'),
         max_duration=Max('dataDuration'),
         min_duration=Min('dataDuration')
     )
+    
+    # Extraer valores
+    total_views = stats['total_views']
+    unique_users = stats['unique_users']
+    unique_devices = stats['unique_devices']
+    unique_channels = stats['unique_channels']
+    duration_stats = {
+        'total_watch_time': stats['total_watch_time'],
+        'avg_duration': stats['avg_duration'],
+        'max_duration': stats['max_duration'],
+        'min_duration': stats['min_duration']
+    }
     
     # Días del período
     days_in_period = (end_date.date() - start_date.date()).days + 1
@@ -250,7 +264,7 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
         dataDate__lte=end_date.date(),
         dataDate__isnull=False,
         dataDuration__isnull=False
-    )
+    ).only('dataDate', 'dataDuration', 'subscriberCode', 'deviceId', 'id')
     
     # Para SQLite, usar Raw SQL para todos los períodos (TruncDate también falla en SQLite)
     # MySQL/MariaDB y PostgreSQL usan Django ORM (más eficiente)
@@ -362,6 +376,7 @@ def get_period_temporal_breakdown(start_date: datetime, end_date: datetime,
 # ANÁLISIS DE CANALES EN EL PERÍODO
 # ============================================================================
 
+@cached_result(timeout=settings.CACHE_TIMEOUT_ANALYTICS, key_prefix='period_channel_analysis')
 def get_period_channel_analysis(start_date: datetime, end_date: datetime,
                                top_n: Optional[int] = None) -> Dict[str, Any]:
     """
@@ -385,7 +400,7 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
         dataDate__lte=end_date.date(),
         dataName__isnull=False,
         dataDuration__isnull=False
-    )
+    ).only('dataName', 'subscriberCode', 'deviceId', 'dataDuration', 'dataDate')
     
     total_period_views = queryset.count()
     
@@ -446,6 +461,7 @@ def get_period_channel_analysis(start_date: datetime, end_date: datetime,
 # ANÁLISIS DE USUARIOS EN EL PERÍODO
 # ============================================================================
 
+@cached_result(timeout=settings.CACHE_TIMEOUT_ANALYTICS, key_prefix='period_user_analysis')
 def get_period_user_analysis(start_date: datetime, end_date: datetime,
                             top_n: Optional[int] = None) -> Dict[str, Any]:
     """
@@ -469,7 +485,7 @@ def get_period_user_analysis(start_date: datetime, end_date: datetime,
         dataDate__lte=end_date.date(),
         subscriberCode__isnull=False,
         dataDuration__isnull=False
-    )
+    ).only('subscriberCode', 'dataName', 'deviceId', 'dataDuration', 'dataDate')
     
     # Análisis por usuario
     user_query = queryset.values('subscriberCode').annotate(
@@ -542,12 +558,13 @@ def get_period_events_analysis(start_date: datetime, end_date: datetime,
         dataDate__lte=end_date.date(),
         dataDate__isnull=False,
         dataDuration__isnull=False
-    )
+    ).only('dataDate', 'id', 'dataName', 'subscriberCode')
     
-    # Cargar datos diarios
-    df = pd.DataFrame(list(
-        queryset.values('dataDate', 'id', 'dataName', 'subscriberCode')
-    ))
+    # Cargar datos diarios - OPTIMIZADO: usar iterator para grandes volúmenes
+    data_list = []
+    for chunk in queryset.values('dataDate', 'id', 'dataName', 'subscriberCode').iterator(chunk_size=5000):
+        data_list.append(chunk)
+    df = pd.DataFrame(data_list)
     
     if df.empty:
         return {"message": "No hay datos en el período seleccionado"}
@@ -618,12 +635,13 @@ def get_period_trend_analysis(start_date: datetime, end_date: datetime) -> Dict[
         dataDate__lte=end_date.date(),
         dataDate__isnull=False,
         dataDuration__isnull=False
-    )
+    ).only('dataDate', 'id')
     
-    # Cargar datos diarios
-    df = pd.DataFrame(list(
-        queryset.values('dataDate', 'id')
-    ))
+    # Cargar datos diarios - OPTIMIZADO: usar iterator para grandes volúmenes
+    data_list = []
+    for chunk in queryset.values('dataDate', 'id').iterator(chunk_size=5000):
+        data_list.append(chunk)
+    df = pd.DataFrame(data_list)
     
     if df.empty:
         return {"message": "No hay datos en el período seleccionado"}
