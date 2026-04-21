@@ -13,8 +13,10 @@ from .health_views import (
     DetailedHealthCheckView,
     MetricsView
 )
+from .auth_views import LoginView
 
 urlpatterns = [
+    path('auth/login/', LoginView.as_view(), name='auth-login'),
     # Endpoints de telemetría
     path('telemetry/sync/', TelemetrySyncView.as_view(), name='telemetry-sync'),
     path('telemetry/merge/ott/', MergeOTTView.as_view(), name='telemetry-merge-ott'),

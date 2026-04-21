@@ -133,10 +133,9 @@ DATABASES = {
 #         'PORT': MariaConfig.Maria_PORT,
 #         'OPTIONS': {
 #             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#             'charset': 'utf8mb4',
 #         },
 #         # Optimizaciones para mejor rendimiento con carga alta
-#         'CONN_MAX_AGE': 600,  # Mantener conexiones vivas por 10 minutos (reducir overhead)
+#         'CONN_MAX_AGE': 1000,  # Mantener conexiones vivas por 5 minutos (reducir overhead)
 #         'AUTOCOMMIT': True,
 #     }
 # }
