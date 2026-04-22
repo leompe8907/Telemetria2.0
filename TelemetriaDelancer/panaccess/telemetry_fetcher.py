@@ -508,11 +508,20 @@ def save_telemetry_records(
     logger.info(f"Guardando {len(records)} registros en BD")
     
     # Obtener recordIds existentes para evitar duplicados
-    existing_record_ids = set(
-        TelemetryRecordEntryDelancer.objects.filter(
-            recordId__in=[r.get("recordId") for r in records if r.get("recordId")]
-        ).values_list('recordId', flat=True)
-    )
+    record_ids = [r.get("recordId") for r in records if r.get("recordId") is not None]
+    existing_record_ids: set[int] = set()
+    # SQLite tiene un límite de variables por sentencia (típicamente 999).
+    # Si pasamos una lista enorme a `__in`, explota con "too many SQL variables".
+    chunk_size = 900
+    for i in range(0, len(record_ids), chunk_size):
+        chunk = record_ids[i : i + chunk_size]
+        if not chunk:
+            continue
+        existing_record_ids.update(
+            TelemetryRecordEntryDelancer.objects.filter(recordId__in=chunk).values_list(
+                "recordId", flat=True
+            )
+        )
     
     saved_count = 0
     skipped_count = 0

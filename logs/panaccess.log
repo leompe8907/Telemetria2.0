@@ -1,34 +1,5 @@
-<<<<<<< HEAD
-=======
-[2026-04-03 22:55:19] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-03 22:55:19] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-03 22:55:19] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2026-04-04 01:53:08] WARNING [TelemetriaDelancer.server.panaccess_client] Timeout 'getListOfTelemetryRecords' (intento 1/3)
-[2026-04-04 02:55:21] INFO [TelemetriaDelancer.server.panaccess_singleton] Sesión caducada, refrescando...
-[2026-04-04 02:55:22] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 02:55:22] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 06:55:23] INFO [TelemetriaDelancer.server.panaccess_singleton] Sesión caducada, refrescando...
-[2026-04-04 06:55:24] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 06:55:24] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 07:45:45] ERROR [TelemetriaDelancer.server.panaccess_client] Llamada 'getListOfTelemetryRecords' falló: You do not have the permission to execute this functionality.
-[2026-04-04 07:45:45] WARNING [TelemetriaDelancer.server.panaccess_client] Error de sesión/permisos 'getListOfTelemetryRecords', limpiando sessionId
-[2026-04-04 07:45:45] WARNING [TelemetriaDelancer.server.panaccess_singleton] Error de sesión detectado en 'getListOfTelemetryRecords', refrescando sesión...
-[2026-04-04 07:45:46] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 07:45:46] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 07:45:46] INFO [TelemetriaDelancer.server.panaccess_singleton] Reintentando llamada 'getListOfTelemetryRecords' con nueva sesión...
-[2026-04-04 07:46:41] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 07:46:41] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 07:46:41] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2026-04-04 07:47:00] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 07:47:00] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 07:47:00] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2026-04-04 07:58:56] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 07:58:56] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 07:58:56] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2026-04-04 08:00:49] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 08:00:49] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 08:00:49] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
-[2026-04-04 08:12:39] INFO [TelemetriaDelancer.utils.auth] Login exitoso
-[2026-04-04 08:12:39] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
-[2026-04-04 08:12:39] INFO [TelemetriaDelancer.server.panaccess_singleton] PanAccess inicializado y autenticado
->>>>>>> 55d949d67aa27fc7d25d608b3166b27652d0e8f3
+[2026-04-22 09:32:55] WARNING [TelemetriaDelancer.server.panaccess_singleton] No hay sesión activa, obteniendo una...
+[2026-04-22 09:32:56] INFO [TelemetriaDelancer.utils.auth] Login exitoso
+[2026-04-22 09:32:56] INFO [TelemetriaDelancer.server.panaccess_singleton] Login exitoso
+[2026-04-22 12:35:52] WARNING [TelemetriaDelancer.server.panaccess_client] Error de conexión 'getListOfTelemetryRecords' (intento 1/3)
+[2026-04-22 12:35:52] INFO [TelemetriaDelancer.server.panaccess_client] [RETRY] [call] Reintentando en 4 segundos...
