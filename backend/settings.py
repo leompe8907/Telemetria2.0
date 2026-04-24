@@ -12,8 +12,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from config import DjangoConfig, CeleryConfig, MariaConfig
-import django_redis
 import os
+
+# `django-redis` es opcional. No debe impedir que el proyecto arranque
+# (p.ej. en entornos donde se use el backend nativo o no haya Redis).
+try:
+    import django_redis  # noqa: F401
+except ModuleNotFoundError:
+    django_redis = None
 
 #* Validar configuraciones
 DjangoConfig.validate()
@@ -113,12 +119,12 @@ TEMPLATES = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # SQLite
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+#DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # ============================================================================
 # CONFIGURACIÓN DE BASE DE DATOS (MariaDB/MySQL)
@@ -140,6 +146,17 @@ DATABASES = {
 #     }
 # }
 
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres",
+        "PASSWORD": "parana771",
+        "HOST": "localhost",  # o 'postgres' si corre en Docker
+        "PORT": "5432",
+        "CONN_MAX_AGE": 60,
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -188,7 +205,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuración de cache usando Redis (mismo que Celery)
 # Intenta usar django-redis, si no está disponible usa el backend nativo de Django
-try:
+if django_redis is not None:
     # Usar django-redis si está disponible (mejor rendimiento y funcionalidades)
     CACHES = {
         'default': {
@@ -202,7 +219,7 @@ try:
             'VERSION': 1,
         }
     }
-except ImportError:
+else:
     # Fallback al backend nativo de Django si django-redis no está instalado
     CACHES = {
         'default': {

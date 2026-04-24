@@ -31,6 +31,52 @@ app.conf.beat_schedule = {
         'schedule': 120.0,  # Cada 2 minutos (120 segundos)
         # Sin expires - las tareas no expiran, se ejecutan cuando sea necesario
     },
+    'compute-ml-anomalies': {
+        'task': 'TelemetriaDelancer.tasks.compute_anomalies_task',
+        'schedule': 600.0,  # Cada 10 minutos
+    },
+    'compute-ml-forecast': {
+        'task': 'TelemetriaDelancer.tasks.compute_forecast_task',
+        'schedule': 1800.0,  # Cada 30 minutos
+        'kwargs': {
+            'channel': None,
+            'forecast_days': 7,
+        },
+    },
+    'train-ml-forecast-models': {
+        'task': 'TelemetriaDelancer.tasks.train_forecast_models_task',
+        'schedule': 21600.0,  # Cada 6 horas
+        'kwargs': {
+            'channels': None,  # top 10 por defecto
+            'window_days': 180,
+            'alpha': 1.0,
+        },
+    },
+    'score-ml-forecast-models': {
+        'task': 'TelemetriaDelancer.tasks.score_forecast_models_task',
+        'schedule': 1800.0,  # Cada 30 minutos
+        'kwargs': {
+            'channels': None,
+            'horizon_days': 7,
+            'window_days': 180,
+        },
+    },
+    'compute-ml-segments': {
+        'task': 'TelemetriaDelancer.tasks.compute_segments_task',
+        'schedule': 3600.0,  # Cada 1 hora
+        'kwargs': {
+            'n_segments': 4,
+            'window_days': 30,
+        },
+    },
+    'compute-ml-churn': {
+        'task': 'TelemetriaDelancer.tasks.compute_churn_task',
+        'schedule': 3600.0,  # Cada 1 hora
+        'kwargs': {
+            'window_days': 14,
+            'min_views': 3,
+        },
+    },
 }
 
 # Configuración adicional de Celery
